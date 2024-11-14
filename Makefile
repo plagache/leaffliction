@@ -38,7 +38,7 @@ module: setup.py
 	uv pip install -e . --upgrade
 
 extract:
-	unzip -a leaves.zip
+	unzip -uo leaves.zip
 
 #------------------------------------------------#
 #   INFO                                         #

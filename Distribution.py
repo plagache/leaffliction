@@ -1,6 +1,7 @@
 import os
 import argparse
 import matplotlib.pyplot as plt
+# plt.switch_backend("qtagg")
 
 def is_an_image():
     return
@@ -11,6 +12,7 @@ def list_files(directory):
 
     pie_chart_dict = {}
     for (root, dirs, files) in os.walk(directory):
+        root = root if len(root.split('/')) <= 1 else root.split('/')[1]
         for file in files:
             file_list.append(os.path.join(root, file))
         for dir in dirs:
@@ -40,5 +42,13 @@ if __name__ == "__main__":
         labels.append(label)
         sizes.append(size)
 
-    plt.pie(sizes, labels=labels)
+    figure, axis = plt.subplots(1, 2)
+    axis[0].pie(sizes, autopct='%1.1f%%', labels=labels)
+
+    y_pos = [i for i in range(0, len(sizes))]
+    axis[1].bar(y_pos, sizes, align='center', alpha=0.5)
+    axis[1].set_xticks(y_pos, labels)
+    axis[1].set_ylabel("counts")
+    plt.title("class distribution")
+
     plt.show()
