@@ -38,7 +38,12 @@ module: setup.py
 	uv pip install -e . --upgrade
 
 extract:
-	unzip -uo leaves.zip
+	wget https://cdn.intra.42.fr/document/document/17547/leaves.zip
+	unzip leaves.zip
+	mkdir -p images/Apple images/Grape
+	mv images/Apple_* images/Apple/
+	mv images/Grape_* images/Grape/
+
 
 #------------------------------------------------#
 #   INFO                                         #
@@ -61,8 +66,9 @@ run:
 	${PYTHON} ${PROGRAM} \
 	# ${ARGUMENTS}
 
-distribution: extract
-	${PYTHON} Distribution.py images
+distribution:
+	${PYTHON} Distribution.py images/Apple
+	${PYTHON} Distribution.py images/Grape
 
 clean:
 	rm -rf images/

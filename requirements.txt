@@ -1,2 +1,3 @@
 matplotlib
 PyQt6
+flake8
