@@ -9,25 +9,21 @@ def is_an_image():
 
 
 def list_files(directory):
-    file_list = []
-    dir_list = []
+    data_dic = {}
 
-    pie_chart_dict = {}
-    for root, dirs, files in os.walk(directory):
-        root = root if len(root.split("/")) <= 1 else root.split("/")[1]
-        for file in files:
-            file_list.append(os.path.join(root, file))
-        for dir in dirs:
-            # dir_list.append(os.path.join(root, dir))
-            dir_list.append(dir)
-        pie_chart_dict[root] = len(files)
+    for root, dirs, files in os.walk(directory, topdown=False):
+        # get the last part of the dirpath
+        root = root if len(root.split("/")) < 1 else root.split("/")[-1]
+        # How to test if directory/category is relevant?
+        # has no files in it and has subdirectories/categories => is irrelevant
+        if len(dirs) == 0:
+            data_dic[root] = len(files)
         print(f"root {root}")
         print(f"list of directory in {root}: {dirs}")
         print(f"number of files in {root}: {len(files)}")
         print("--------------------------------")
-    print(pie_chart_dict)
-    print(dir_list)
-    return pie_chart_dict, dir_list, file_list
+    print(data_dic)
+    return data_dic
 
 
 if __name__ == "__main__":
@@ -37,9 +33,7 @@ if __name__ == "__main__":
     parser.add_argument("directory", help="the directory to parse")
     args = parser.parse_args()
 
-    pie_dictionaries, directories, files = list_files(args.directory)
-    # print(directories)
-    # print(files)
+    pie_dictionaries = list_files(args.directory)
     labels = []
     sizes = []
 
