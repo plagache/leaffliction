@@ -44,6 +44,8 @@ extract:
 	mv images/Apple_* images/Apple/
 	mv images/Grape_* images/Grape/
 
+augmented_directory:
+	mkdir -p augmented_directory
 
 #------------------------------------------------#
 #   INFO                                         #
@@ -58,6 +60,9 @@ size:
 	du -hd 0
 	du -hd 0 ${VENV}
 
+nvidia:
+	watch -n0.1 nvidia-smi
+
 
 #------------------------------------------------#
 #   RECIPES                                      #
@@ -69,6 +74,9 @@ run:
 distribution:
 	${PYTHON} Distribution.py images/Apple
 	${PYTHON} Distribution.py images/Grape
+
+augmentation: augmented_directory
+	${PYTHON} Augmentation.py
 
 clean:
 	rm -rf images/
