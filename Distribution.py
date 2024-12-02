@@ -37,7 +37,7 @@ if __name__ == "__main__":
     labels = categories_dic.keys()
     sizes = categories_dic.values()
 
-    if len(labels) == 0:
+    if len(labels) != 0:
         figure, axis = plt.subplots(1, 2)
         axis[0].pie(sizes, autopct="%1.1f%%", labels=labels)
 
@@ -47,4 +47,5 @@ if __name__ == "__main__":
         axis[1].set_ylabel("counts")
         plt.title("class distribution")
 
+        # figure.savefig(f"{args.directory.replace('/', '-')}.jpg")
         plt.show()
