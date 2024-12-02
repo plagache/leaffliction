@@ -8,7 +8,7 @@ def is_an_image():
     return
 
 
-def list_files(directory):
+def get_categories_dic(directory):
     data_dic = {}
 
     for root, dirs, files in os.walk(directory, topdown=False):
@@ -33,21 +33,18 @@ if __name__ == "__main__":
     parser.add_argument("directory", help="the directory to parse")
     args = parser.parse_args()
 
-    pie_dictionaries = list_files(args.directory)
-    labels = []
-    sizes = []
+    categories_dic = get_categories_dic(args.directory)
+    labels = categories_dic.keys()
+    sizes = categories_dic.values()
 
-    for label, size in pie_dictionaries.items():
-        labels.append(label)
-        sizes.append(size)
+    if len(labels) == 0:
+        figure, axis = plt.subplots(1, 2)
+        axis[0].pie(sizes, autopct="%1.1f%%", labels=labels)
 
-    figure, axis = plt.subplots(1, 2)
-    axis[0].pie(sizes, autopct="%1.1f%%", labels=labels)
+        y_pos = [i for i in range(0, len(sizes))]
+        axis[1].bar(y_pos, sizes, align="center", alpha=0.5)
+        axis[1].set_xticks(y_pos, labels)
+        axis[1].set_ylabel("counts")
+        plt.title("class distribution")
 
-    y_pos = [i for i in range(0, len(sizes))]
-    axis[1].bar(y_pos, sizes, align="center", alpha=0.5)
-    axis[1].set_xticks(y_pos, labels)
-    axis[1].set_ylabel("counts")
-    plt.title("class distribution")
-
-    plt.show()
+        plt.show()
