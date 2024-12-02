@@ -1,4 +1,6 @@
 # TODO
+download only if nescessary / not exist
+inputs url, pathlib, subdir, gzip:Optional[method], return path with data
 
 # Question
 

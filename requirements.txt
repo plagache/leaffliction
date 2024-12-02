@@ -1,4 +1,4 @@
 matplotlib
 PyQt6           # lib graphic
 flake8          # norme
-Augmentor     # image augmentation library
+Augmentor       # image augmentation library

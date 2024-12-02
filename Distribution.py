@@ -27,9 +27,7 @@ def get_categories_dic(directory):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="analyse a dataset from a given directory"
-    )
+    parser = argparse.ArgumentParser(description="analyse a dataset from a given directory")
     parser.add_argument("directory", help="the directory to parse")
     args = parser.parse_args()
 
@@ -41,7 +39,7 @@ if __name__ == "__main__":
         figure, axis = plt.subplots(1, 2)
         axis[0].pie(sizes, autopct="%1.1f%%", labels=labels)
 
-        y_pos = [i for i in range(0, len(sizes))]
+        y_pos = range(len(sizes))
         axis[1].bar(y_pos, sizes, align="center", alpha=0.5)
         axis[1].set_xticks(y_pos, labels)
         axis[1].set_ylabel("counts")

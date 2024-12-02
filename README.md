@@ -18,7 +18,8 @@ make setup
 make nvidia
 
 # dll and extract datasets
-make extract
+# make extract
+make dataloaders
 
 # display information about the distribution of the datasets
 make distribution

@@ -41,6 +41,10 @@ extract:
 	wget https://cdn.intra.42.fr/document/document/17547/leaves.zip
 	unzip leaves.zip
 	mkdir -p images/Apple images/Grape
+	mkdir -p images/Apple/toto
+	mkdir -p images/Apple/tato/tota/
+	mv images/Apple_Black_rot images/Apple/toto/
+	mv images/Apple_rust images/Apple/tato/tota/
 	mv images/Apple_* images/Apple/
 	mv images/Grape_* images/Grape/
 
@@ -71,15 +75,20 @@ run:
 	${PYTHON} ${PROGRAM} \
 	# ${ARGUMENTS}
 
+dataloaders:
+	${PYTHON} helpers.py
+
 distribution:
+	${PYTHON} Distribution.py images
 	${PYTHON} Distribution.py images/Apple
-	${PYTHON} Distribution.py images/Grape
+	# ${PYTHON} Distribution.py images/Grape
 
 augmentation: augmented_directory
 	${PYTHON} Augmentation.py
 
 clean:
 	rm -rf images/
+	rm -rf "leaves.zip"
 
 fclean: clean
 	rm -rf ${VENV}
