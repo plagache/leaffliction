@@ -75,7 +75,7 @@ run:
 	${PYTHON} ${PROGRAM} \
 	# ${ARGUMENTS}
 
-dataloaders:
+get_dataset:
 	${PYTHON} helpers.py
 
 distribution:

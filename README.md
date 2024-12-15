@@ -19,7 +19,7 @@ make nvidia
 
 # dll and extract datasets
 # make extract
-make dataloaders
+make get_dateset
 
 # display information about the distribution of the datasets
 make distribution

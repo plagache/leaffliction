@@ -1,4 +1,6 @@
+# Updating this file and make will update the environement
 matplotlib
 PyQt6           # lib graphic
 flake8          # norme
-Augmentor       # image augmentation library
+Augmentor       # image augmentation library 589M 20 packages
+# imgaug          # image augmentation library 941M 27 packages integrate scipy scikit-image opencv-python networkx
