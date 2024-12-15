@@ -45,5 +45,5 @@ if __name__ == "__main__":
         axis[1].set_ylabel("counts")
         plt.title("class distribution")
 
-        # figure.savefig(f"{args.directory.replace('/', '-')}.jpg")
+        figure.savefig(f"{args.directory.replace('/', '-')}.jpg")
         plt.show()
