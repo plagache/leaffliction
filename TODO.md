@@ -7,6 +7,9 @@ inputs url, pathlib, subdir, gzip:Optional[method], return path with data
 - get data
     - check data integrety
     - normalization / resize
+    - distribution
+        - load data in class
+            - labels / path / elements / number of elements
 - augment data to balance dataset
 - create data validation / training batches
 - setup labels to detecte categories
