@@ -80,7 +80,7 @@ get_dataset:
 
 distribution:
 	${PYTHON} Distribution.py images
-	${PYTHON} Distribution.py images/Apple
+	# ${PYTHON} Distribution.py images/Apple
 	# ${PYTHON} Distribution.py images/Grape
 
 augmentation: augmented_directory
