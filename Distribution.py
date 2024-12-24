@@ -13,12 +13,12 @@ def get_categories_dic(directory):
 
     for root, dirs, files in os.walk(directory, topdown=False):
         # get the last part of the dirpath
-        root = root if len(root.split("/")) < 1 else root.split("/")[-1]
+        category = root if len(root.split("/")) < 1 else root.split("/")[-1]
         # How to test if directory/category is relevant?
         # has no files in it and has subdirectories/categories => is irrelevant
         if len(dirs) == 0:
-            data_dic[root] = len(files)
-        print(f"root {root}")
+            data_dic[category] = len(files)
+        print(f"category {category}")
         print(f"list of directory in {root}: {dirs}")
         print(f"number of files in {root}: {len(files)}")
         print("--------------------------------")
