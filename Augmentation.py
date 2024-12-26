@@ -2,42 +2,55 @@ import argparse
 from PIL import Image
 from Augmentor.Operations import Flip, Rotate, Skew, Shear, CropRandom, Distort
 from pathlib import Path
+from Distribution import Category, get_categories_dic
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Augment an image or directories of images")
     parser.add_argument("path", help="the file(s) to augment")
     args = parser.parse_args()
-    print(args.path)
+    print("working with", args.path)
 
     output_directory = "augmented_directory"
 
-    toto = Path(args.path)
+    given_path = Path(args.path)
     images_paths = []
-    input_image = "images/Apple_rust/image (9).JPG"
-    images_paths.append(input_image)
+    output_paths = []
 
     show_image = False
-    if toto.is_file():
-        show_image = True
-        pass
-    elif toto.is_dir():
+    if given_path.is_file():
+        show_image = False
+        images_paths.append(args.path)
+
+        # split by / | remove last one | join back the elements
+        path = '/'.join(args.path.split('/')[:-1])
+
+        path = f"{output_directory}/{path}"
+        output_paths.append(path)
+
+    elif given_path.is_dir():
         # Construct set of directories/categories see distribution
-        input_image = "images/Apple_rust/image (10).JPG"
-        images_paths.append(input_image)
-        # extract list of images
-        pass
+        categories = get_categories_dic(given_path)
+        for category in categories.values():
+            path = f"{output_directory}/{category.path}"
+            output_paths.append(path)
+            for image in category.files:
+                # extract list of images
+                images_paths.append(f"{category.path}/{image}")
+
     else:
         pass
         # Exception path error
 
-    #################
+    # print(output_paths, images_paths[-1])
 
-    # Create output directories 
+    # Create output directories
+    for path in output_paths:
+        Path(path).mkdir(parents=True, exist_ok=True)
 
-    #################
-    for image_path in images_paths:
-        image = Image.open(input_image)
-        # image.show()
+    print(f"{len(images_paths)} image to process")
+    for count, image_path in enumerate(images_paths, start=1):
+        print(f"processing #{count}", image_path)
+        image = Image.open(image_path)
 
         modified_images = {
             "Rotate": Rotate(probability=1, rotation=90).perform_operation([image]),
@@ -49,12 +62,11 @@ if __name__ == "__main__":
         }
 
         for modification, images in modified_images.items():
-            split_image_name = input_image.split('.')
+            split_image_name = image_path.split('.')
             split_image_name[0] = f"{split_image_name[0]}_{modification}"
             output_path = '.'.join(split_image_name)
             output_path = f"{output_directory}/{output_path}"
-            # output_path.split('/')[:-1]
-            print(output_path)
+            # print(output_path)
             images[0].save(output_path)
             if show_image is True:
                 images[0].show()

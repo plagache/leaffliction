@@ -1,15 +1,25 @@
 import os
 import argparse
 import matplotlib.pyplot as plt
+from  dataclasses import dataclass
 # plt.switch_backend("qtagg")
 
+
+@dataclass
+class Category:
+    path: str
+    files: list[str]
+    count: int
+
+    def count(self) -> int:
+        return len(self.files)
 
 def is_an_image():
     return
 
 
 def get_categories_dic(directory):
-    data_dic = {}
+    categories_dic = {}
 
     for root, dirs, files in os.walk(directory, topdown=False):
         # get the last part of the dirpath
@@ -17,13 +27,13 @@ def get_categories_dic(directory):
         # How to test if directory/category is relevant?
         # has no files in it and has subdirectories/categories => is irrelevant
         if len(dirs) == 0:
-            data_dic[category] = len(files)
-        print(f"category {category}")
-        print(f"list of directory in {root}: {dirs}")
-        print(f"number of files in {root}: {len(files)}")
-        print("--------------------------------")
-    print(data_dic)
-    return data_dic
+            categories_dic[category] = Category(root, files, len(files))
+        # print(f"category {category}")
+        # print(f"list of directory in {root}: {dirs}")
+        # print(f"number of files in {root}: {len(files)}")
+        # print("--------------------------------")
+    # print(categories_dic)
+    return categories_dic
 
 
 if __name__ == "__main__":
@@ -33,10 +43,11 @@ if __name__ == "__main__":
 
     categories_dic = get_categories_dic(args.directory)
     labels = categories_dic.keys()
-    sizes = categories_dic.values()
+    sizes = [value.count for value in categories_dic.values()]
 
     if len(labels) != 0:
-        figure, axis = plt.subplots(1, 2)
+        figure, axis = plt.subplots(1, 2, figsize=(19.2, 10.8), dpi=100)
+
         axis[0].pie(sizes, autopct="%1.1f%%", labels=labels)
 
         y_pos = range(len(sizes))
