@@ -11,9 +11,6 @@ class Category:
     files: list[str]
     count: int
 
-    def count(self) -> int:
-        return len(self.files)
-
 def is_an_image():
     return
 
@@ -52,7 +49,7 @@ if __name__ == "__main__":
 
         y_pos = range(len(sizes))
         axis[1].bar(y_pos, sizes, align="center", alpha=0.5)
-        axis[1].set_xticks(y_pos, labels)
+        axis[1].set_xticks(y_pos, labels, rotation=45)
         axis[1].set_ylabel("counts")
         plt.title("class distribution")
 
