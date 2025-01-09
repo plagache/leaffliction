@@ -43,7 +43,6 @@ def display_images(images_with_titles):
     plt.tight_layout()
     plt.subplots_adjust(top=0.88)
     plt.show()
-    return
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Augment an image or directories of images")
