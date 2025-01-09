@@ -84,9 +84,12 @@ distribution:
 	# ${PYTHON} Distribution.py images/Grape
 
 augmentation: augmented_directory
-	${PYTHON} Augmentation.py images/Apple_rust/image (9).JPG
-	${PYTHON} Augmentation.py images/Apple_rust/
+	# ${PYTHON} Augmentation.py "images/Apple_rust/image (9).JPG"
+	# ${PYTHON} Augmentation.py images/Apple/Apple_healthy
 	${PYTHON} Augmentation.py images
+
+clean_augmentation:
+	rm -rf augmented_directory
 
 clean:
 	rm -rf images/
