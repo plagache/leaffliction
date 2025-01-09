@@ -60,7 +60,7 @@ if __name__ == "__main__":
     show_image = False
     show_images = []
     if given_path.is_file():
-        show_image = False
+        show_image = True
         images_paths.append(args.path)
 
         # split by / | remove last one | join back the elements
@@ -110,9 +110,8 @@ if __name__ == "__main__":
                 })
             images[0].save(output_path)
 
-        if show_image is True:
-            display_images(show_images)
-            print("this is where we would display images")
+    if show_image is True:
+        display_images(show_images)
 
         # need to write the original image in output path
 
