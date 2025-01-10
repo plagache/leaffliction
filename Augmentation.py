@@ -29,11 +29,10 @@ def display_images(images_with_titles):
     plt.style.use('dark_background')
     rows = 1
     cols = len(images_with_titles)
-    fig, axes = plt.subplots(rows, cols, figsize=(10, 8))
+    fig, axes = plt.subplots(rows, cols, figsize=(19.2, 10.8))
     fig.suptitle("augmentation", fontsize=16, fontweight="bold")
 
     for i, (title, path) in enumerate(images_with_titles):
-        print(image)
         img = mpimg.imread(path)
         axes[i].imshow(img)
         axes[i].axis("off")
@@ -87,27 +86,25 @@ if __name__ == "__main__":
         pass
         # Exception path error
 
-    # Create output directories
-    for path in output_paths:
-        Path(path).mkdir(parents=True, exist_ok=True)
-
     # Modify images
     print(f"{len(images_paths)} image to process")
     for count, image_path in enumerate(images_paths, start=1):
         print(f"processing #{count}", image_path)
         image = Image.open(image_path)
 
-        original_output_path = f"{output_directory}/{image_path}"
-        images_to_show.append(("original", original_output_path))
-        image.save(original_output_path)
+        images_to_show.append(("original", image_path))
 
         for modification, images in get_modified_images(image):
-            output_path = f"{output_directory}/{get_modified_image_name(modification, image_path)}"
+            output_path = get_modified_image_name(modification, image_path)
             images_to_show.append((modification, output_path))
             images[0].save(output_path)
 
     if show_image is True:
         display_images(images_to_show)
+
+    # Create output directories (only relevant for balanced dataset)
+    # for path in output_paths:
+    #     Path(path).mkdir(parents=True, exist_ok=True)
 
     ###################
 
