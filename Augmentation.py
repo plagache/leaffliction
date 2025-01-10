@@ -26,23 +26,24 @@ def get_modified_image_name(modification, image_path):
 
 
 def display_images(images_with_titles):
+    plt.style.use('dark_background')
     rows = 1
     cols = len(images_with_titles)
-    fig, axes = plt.subplots(rows, cols, (10, 8))
+    fig, axes = plt.subplots(rows, cols, figsize=(10, 8))
     fig.suptitle("augmentation", fontsize=16, fontweight="bold")
 
-    axes = axes.flatten()
-
-    for i, image in enumerate(images_with_titles):
-        img = mpimg.imread(image.path)
+    for i, (title, path) in enumerate(images_with_titles):
+        print(image)
+        img = mpimg.imread(path)
         axes[i].imshow(img)
-        axes[i].axis('off')
+        axes[i].axis("off")
 
-        axes[i].title(image.title, fontsize=10)
-    
+        axes[i].set_title(title, fontsize=10)
+
     plt.tight_layout()
     plt.subplots_adjust(top=0.88)
     plt.show()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Augment an image or directories of images")
@@ -59,6 +60,7 @@ if __name__ == "__main__":
     max_count = -1
     show_image = False
     show_images = []
+
     if given_path.is_file():
         show_image = True
         images_paths.append(args.path)
@@ -71,7 +73,7 @@ if __name__ == "__main__":
 
     elif given_path.is_dir():
         # Construct set of directories/categories see distribution
-        categories = get_categories_dic(given_path)
+        categories: dict[str, Category] = get_categories_dic(given_path)
         for category in categories.values():
             max_count = category.count if category.count > max_count else max_count
 
@@ -96,24 +98,16 @@ if __name__ == "__main__":
         image = Image.open(image_path)
 
         original_output_path = f"{output_directory}/{image_path}"
-        show_images.append({
-            "title": "original",
-            "path": original_output_path
-            })
+        show_images.append(("original", original_output_path))
         image.save(original_output_path)
 
         for modification, images in get_modified_images(image):
             output_path = f"{output_directory}/{get_modified_image_name(modification, image_path)}"
-            show_images.append({
-                "title": modification,
-                "path": output_path
-                })
+            show_images.append((modification, output_path))
             images[0].save(output_path)
 
     if show_image is True:
         display_images(show_images)
-
-        # need to write the original image in output path
 
     ###################
 
