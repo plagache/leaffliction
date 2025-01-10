@@ -59,7 +59,7 @@ if __name__ == "__main__":
 
     max_count = -1
     show_image = False
-    show_images = []
+    images_to_show = []
 
     if given_path.is_file():
         show_image = True
@@ -98,16 +98,16 @@ if __name__ == "__main__":
         image = Image.open(image_path)
 
         original_output_path = f"{output_directory}/{image_path}"
-        show_images.append(("original", original_output_path))
+        images_to_show.append(("original", original_output_path))
         image.save(original_output_path)
 
         for modification, images in get_modified_images(image):
             output_path = f"{output_directory}/{get_modified_image_name(modification, image_path)}"
-            show_images.append((modification, output_path))
+            images_to_show.append((modification, output_path))
             images[0].save(output_path)
 
     if show_image is True:
-        display_images(show_images)
+        display_images(images_to_show)
 
     ###################
 
@@ -120,3 +120,7 @@ if __name__ == "__main__":
 
     # for range((max - min) % number of transformation):
     #     apply number of transfo ?
+
+    # modified images are always saved next to their original image
+
+    # refacto the modify images loop to save in original path (simplificaiton)
