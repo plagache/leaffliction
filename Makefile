@@ -82,13 +82,15 @@ get_dataset:
 
 distribution:
 	${PYTHON} Distribution.py images
+	${PYTHON} Distribution.py augmented_directory
 	# ${PYTHON} Distribution.py images/Apple
 	# ${PYTHON} Distribution.py images/Grape
 
 augmentation: augmented_directory
-	${PYTHON} Augmentation.py "images/Apple/Apple_healthy/image (9).JPG"
+	# ${PYTHON} Augmentation.py "images/Apple/Apple_healthy/image (9).JPG"
 	# ${PYTHON} Augmentation.py images/Apple/Apple_healthy
-	# ${PYTHON} Augmentation.py images
+	# ${PYTHON} Augmentation.py images/Apple
+	${PYTHON} Augmentation.py images
 
 clean:
 	rm -rf images
