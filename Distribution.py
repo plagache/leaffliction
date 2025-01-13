@@ -7,16 +7,16 @@ from  dataclasses import dataclass
 
 @dataclass
 class Category:
+    name: str
     path: str
     files: list[str]
     count: int
+    new_path: str = None
+    modified_images: list[str] = None
 
-def is_an_image():
-    return
 
-
-def get_categories_dic(directory):
-    categories_dic = {}
+def get_categories(directory) -> list[Category]:
+    categories: list[Category] = []
 
     for root, dirs, files in os.walk(directory, topdown=False):
         # get the last part of the dirpath
@@ -24,13 +24,13 @@ def get_categories_dic(directory):
         # How to test if directory/category is relevant?
         # has no files in it and has subdirectories/categories => is irrelevant
         if len(dirs) == 0:
-            categories_dic[category] = Category(root, files, len(files))
+            categories.append(Category(category, root, files, len(files)))
         # print(f"category {category}")
         # print(f"list of directory in {root}: {dirs}")
         # print(f"number of files in {root}: {len(files)}")
         # print("--------------------------------")
     # print(categories_dic)
-    return categories_dic
+    return categories
 
 
 if __name__ == "__main__":
@@ -38,9 +38,9 @@ if __name__ == "__main__":
     parser.add_argument("directory", help="the directory to parse")
     args = parser.parse_args()
 
-    categories_dic = get_categories_dic(args.directory)
-    labels = categories_dic.keys()
-    sizes = [value.count for value in categories_dic.values()]
+    categories: list[Category] = get_categories(args.directory)
+    labels = [value.name for value in categories]
+    sizes = [value.count for value in categories]
 
     if len(labels) != 0:
         figure, axis = plt.subplots(1, 2, figsize=(19.2, 10.8), dpi=100)

@@ -4,15 +4,10 @@ from PIL import Image
 from Augmentor.Operations import Flip, Rotate, Skew, Shear, CropRandom, Distort
 from pathlib import Path
 from shutil import copy
-from Distribution import Category, get_categories_dic
+from Distribution import Category, get_categories
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
-
-@dataclass
-class Balanced(Category):
-    new_path: str
-    modified_images: list[str]
 
 def get_modified_images(image):
     modified_images = {
@@ -28,7 +23,7 @@ def get_modified_images(image):
 def modify_images(images_paths, images_to_show):
     modified_images = []
     for count, image_path in enumerate(images_paths, start=1):
-        # print(f"processing #{count}", image_path)
+        print(f"processing #{count}", image_path)
         # todo add tqdm progress bar
         image = Image.open(image_path)
 
@@ -78,12 +73,11 @@ if __name__ == "__main__":
     output_directory = "augmented_directory"
 
     given_path = Path(args.path)
-    images_paths = []
-    balanced_categories: dict[str, Balanced] = {}
 
     max_count = -1
     show_image = False
     images_to_show = []
+    categories: list[Category] = None
 
     if given_path.is_file():
         show_image = True
@@ -93,35 +87,35 @@ if __name__ == "__main__":
 
     elif given_path.is_dir():
         # Construct set of directories/categories see distribution
-        categories: dict[str, Category] = get_categories_dic(given_path)
-        for name, category in categories.items():
+        categories = get_categories(given_path)
+        for category in categories:
             max_count = category.count if category.count > max_count else max_count
 
-            path = f"{output_directory}/{category.path}"
-            balanced = Balanced(category.path, category.files, category.count, path, [])
-            balanced.files = [ f"{category.path}/{image}" for image in category.files ]
-            balanced_categories[name] = balanced
+            category.files = [ f"{category.path}/{image}" for image in category.files ]
+            category.new_path = f"{output_directory}/{category.path}"
 
     else:
         pass
         # Exception path error
 
     # Modify images
-    for name, balanced in balanced_categories.items():
-        balanced.modified_images = modify_images(balanced.files, [])
+    for category in categories:
+        category.modified_images = modify_images(category.files, [])
 
+    print("Images have been modified\nNow balancing the dataset")
     # Create output directories (only relevant for balancing dataset)
-    for category_name, balanced, in balanced_categories.items():
-        Path(balanced.new_path).mkdir(parents=True, exist_ok=True)
+    for category in categories:
+        Path(category.new_path).mkdir(parents=True, exist_ok=True)
         # when dir is created we can then balance this category around the biggest known
         # 1 - copy all original images in new_path
-        for file in balanced.files:
-            copy(file, balanced.new_path)
+        for file in category.files:
+            copy(file, category.new_path)
 
         # 2 - copy max_count - category.count images in new_path
-        if max_count > balanced.count:
-            for file in balanced.modified_images[ : max_count - balanced.count - 1 ]:
-                copy(file, balanced.new_path)
+        if max_count > category.count:
+            # todo add a shuffle of modified_images to select them at random
+            for file in category.modified_images[:max_count - category.count]:
+                copy(file, category.new_path)
 
     ###################
 
