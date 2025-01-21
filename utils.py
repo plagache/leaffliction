@@ -19,7 +19,7 @@ class DatasetFolder:
             self.root = Path(root)
         self.samples = self.make_dataset(self.root)
         self.items = self.samples
-        self.classes, self.mapped_dictonnary = self.find_classes(self.root)
+        self.classes, self.mapped_dictonnary, self.count_dictionnary = self.find_classes(self.root)
         self.images: Optional[list] = None
         self.numpy: Optional[list] = None
 
@@ -50,17 +50,19 @@ class DatasetFolder:
             'monkey': 2
             }
         """
-        data_dic = {}
+        mapped_dic = {}
+        count_dic = {}
         data = []
         categories = []
-        count = 0
+        index = 0
         for root, dirs, files in os.walk(directory, topdown=False):
             category = root if len(root.split("/")) < 1 else root.split("/")[-1]
             if len(files) != 0:
                 categories.append(category)
                 if len(dirs) == 0:
-                    data_dic[category] = count
-                count += 1
+                    mapped_dic[category] = index
+                    count_dic[category] = len(files)
+                index += 1
             # How to test if directory/category is relevant?
             # Has at least one file that is not a directory
             # for example images is not a category
@@ -72,7 +74,7 @@ class DatasetFolder:
             #     count += 1
             # if len(dirs) == 0:
             #     data_dic[category] = len(files)
-        return (categories, data_dic)
+        return categories, mapped_dic, count_dic
 
     def make_dataset(self, directory):
         """
@@ -84,8 +86,8 @@ class DatasetFolder:
         # pathname = directory + "/**"
         # files = glob.glob(pathname, recursive=True)
         pattern = "*"
-        files = list(self.root.rglob(pattern))
-        samples = [sample for sample in files if os.path.isdir(sample) is False]
+        files = list(directory.rglob(pattern))
+        samples = [sample for sample in files if os.path.isfile(sample) is True]
         return samples
 
     def to_path(self):
