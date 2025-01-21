@@ -37,8 +37,10 @@ requirements: requirements.txt
 module: setup.py
 	uv pip install -e . --upgrade
 
-extract:
-	wget https://cdn.intra.42.fr/document/document/17547/leaves.zip
+download:
+	wget -N https://cdn.intra.42.fr/document/document/17547/leaves.zip
+
+extract: download
 	unzip leaves.zip
 	mkdir -p images/Apple images/Grape
 	mkdir -p images/Apple/toto
@@ -80,21 +82,24 @@ get_dataset:
 
 distribution:
 	${PYTHON} Distribution.py images
+	${PYTHON} Distribution.py augmented_directory
 	# ${PYTHON} Distribution.py images/Apple
 	# ${PYTHON} Distribution.py images/Grape
 
 augmentation: augmented_directory
-	${PYTHON} Augmentation.py images/Apple_rust/image (9).JPG
-	${PYTHON} Augmentation.py images/Apple_rust/
+	# ${PYTHON} Augmentation.py "images/Apple/Apple_healthy/image (9).JPG"
+	# ${PYTHON} Augmentation.py images/Apple/Apple_healthy
+	# ${PYTHON} Augmentation.py images/Apple
 	${PYTHON} Augmentation.py images
 
 clean:
-	rm -rf images/
-	rm -rf "leaves.zip"
+	rm -rf images
+	rm -rf augmented_directory
 
 fclean: clean
 	rm -rf ${VENV}
 	rm -rf activate
+	rm -rf "leaves.zip"
 
 re: fclean setup run
 
@@ -103,4 +108,4 @@ re: fclean setup run
 #   SPEC                                         #
 #------------------------------------------------#
 .SILENT:
-.PHONY: setup venv uv_upgrade pip_upgrade install module requirements list version size run clean fclean re
+.PHONY: setup venv uv_upgrade pip_upgrade install module requirements list version size run clean fclean re download
