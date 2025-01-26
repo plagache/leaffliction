@@ -113,7 +113,25 @@ class DatasetFolder:
         self.items = self.images
         return self
 
-    def __getitem__(self, index: int):
+    # def __getitem__(self, index: int):
+    #     # def __getitem__(self, index: int) -> Tuple[Any, Any]:
+    #     """
+    #     Inputs:
+    #         index: int
+    #
+    #     Outputs:
+    #         tuple: (sample, target) where target is class_index of the target class.
+    #     """
+    #     # sample = self.samples[index]
+    #
+    #     class_index = None
+    #     for key, value in self.mapped_dictonnary.items():
+    #         if key in str(self.samples[index]):
+    #             class_index = value
+    #
+    #     return (self.items[index], class_index)
+
+    def __getitem__(self, start: int, stop: int = None):
         # def __getitem__(self, index: int) -> Tuple[Any, Any]:
         """
         Inputs:
@@ -122,14 +140,22 @@ class DatasetFolder:
         Outputs:
             tuple: (sample, target) where target is class_index of the target class.
         """
-        # sample = self.samples[index]
+        index = start
+        if stop is None:
+            end = start + 1
+        else:
+            end = stop
 
-        class_index = None
-        for key, value in self.mapped_dictonnary.items():
-            if key in str(self.samples[index]):
-                class_index = value
+        elements = list()
+        for element in range(start, end):
+            class_index = None
+            for key, value in self.mapped_dictonnary.items():
+                if key in str(self.samples[index]):
+                    class_index = value
+            elements.append((self.items[index], class_index))
+        return elements
 
-        return (self.items[index], class_index)
+        # return (self.items[index:end:stride], class_index)
 
     def __len__(self) -> int:
         """
@@ -143,6 +169,48 @@ class Dataloaders:
     """
     we give a type(Dataset) to this Loaders a batch size, and a bunch of other parameters to this class and it fetch the data for us
     """
+    def __init__(self, dataset: DatasetFolder, batch_size):
+        self.dataset = dataset
+        self.batch_size = batch_size
+        # self.index = 0
+
+    """
+    object on wich we want to iterate (must be iterable)
+    e. g. our dataset
+    """
+    def __iter__(self):
+        self.index = 0
+        while self.index + self.batch_size < len(self.dataset):
+            self.index += self.batch_size
+            yield tuple(self.dataset[self.index - self.batch_size: self.index])
+        # return self
+        # if self.dataset.numpy is None:
+        #     self.dataset.to_numpy()
+        # return self.dataset.numpy
+        # rsize = range(self.batch_size)
+        # elements = list()
+        # for element in rsize:
+        #     elements.append(self.dataset[element + self.index])
+        # self.batch = tuple(elements)
+        # return self.batch
+
+    # """
+    # how to fetch the next __iter__(object)
+    # """
+    # def __next__(self):
+    #     if self.index <= len(self.dataset):
+    #         rsize = range(self.batch_size)
+    #         elements = list()
+    #         for element in rsize:
+    #             if element + self.index < len(self.dataset):
+    #                 elements.append(self.dataset[element + self.index])
+    #         self.batch = tuple(elements)
+    #         # next_batch = self.batch
+    #         # print(self.index)
+    #         self.index += self.batch_size
+    #         return self.batch
+    #     else:
+    #         raise StopIteration
 
 
 if __name__ == "__main__":
@@ -164,8 +232,8 @@ if __name__ == "__main__":
     # file_path.read_bytes()
     # print(file_path.read_bytes())
 
-    print(dataset.classes)
-    print(dataset.mapped_dictonnary)
+    # print(dataset.classes)
+    # print(dataset.mapped_dictonnary)
 
     # print(dataset.images)
     # dataset.to_images()
@@ -189,20 +257,25 @@ if __name__ == "__main__":
     # another_array = np.load(sample, allow_pickle=True)
     # print(another_array)
 
-    print(dataset[0])
-    print(dataset[1])
-    dataset.to_images()
-    print(dataset[15])
-    print(dataset[300])
-    dataset.to_numpy()
-    print(dataset[2000])
-    print(dataset[4000])
-    print(dataset[7000])
+    # print(dataset[0])
+    # print(dataset[1])
+    # dataset.to_images()
+    # print(dataset[15])
+    # print(dataset[300])
+    # dataset.to_numpy()
+    # print(dataset[2000])
+    # print(dataset[4000])
+    # print(dataset[7000])
     # print(dataset.samples)
-    print(dataset.__len__())
-    print(len(dataset))
+    # print(dataset.__len__())
+    # print(len(dataset))
     # print(dataset[20000])
     # print(dataset.__len__())
 
     # dataset.to_numpy()
     # print(dataset[12])
+
+    dataloader = Dataloaders(dataset, batch_size=5)
+    for batch in dataloader:
+        print("______________")
+        print(batch)
