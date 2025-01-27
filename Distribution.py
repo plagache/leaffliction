@@ -2,17 +2,18 @@ import os
 import argparse
 import matplotlib.pyplot as plt
 from  dataclasses import dataclass
+from utils import DatasetFolder
 # plt.switch_backend("qtagg")
 
 
 @dataclass
 class Category:
     name: str
-    path: str
+    # path: str
     files: list[str]
     count: int
     new_path: str = None
-    modified_images: list[str] = None
+    augmented_images: list[str] = None
 
 
 def get_categories(directory) -> list[Category]:
@@ -38,9 +39,9 @@ if __name__ == "__main__":
     parser.add_argument("directory", help="the directory to parse")
     args = parser.parse_args()
 
-    categories: list[Category] = get_categories(args.directory)
-    labels = [value.name for value in categories]
-    sizes = [value.count for value in categories]
+    folder: DatasetFolder = DatasetFolder(args.directory)
+    labels = folder.classes
+    sizes = folder.count_dictionnary.values()
 
     if len(labels) != 0:
         figure, axis = plt.subplots(1, 2, figsize=(19.2, 10.8), dpi=100)

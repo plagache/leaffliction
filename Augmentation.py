@@ -7,6 +7,7 @@ from shutil import copy
 from Distribution import Category, get_categories
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+from utils import DatasetFolder
 
 
 def get_modified_images(image):
@@ -39,13 +40,13 @@ def modify_images(images_paths, images_to_show):
     return modified_images
 
 
-def get_modified_image_name(modification, image_path):
+def get_modified_image_name(modification: str, image_path: str) -> str:
     split_image_name = image_path.split(".")
     split_image_name[0] = f"{split_image_name[0]}_{modification}"
     return ".".join(split_image_name)
 
 
-def display_images(images_with_titles):
+def display_images(images_with_titles: tuple(str, str)):
     plt.style.use('dark_background')
     rows = 1
     cols = len(images_with_titles)
@@ -74,9 +75,9 @@ if __name__ == "__main__":
 
     given_path = Path(args.path)
 
-    max_count = -1
-    show_image = False
-    images_to_show = []
+    max_count: int = -1
+    show_image: bool = False
+    images_to_show: list[tuple(str, str)] = []
     categories: list[Category] = None
 
     if given_path.is_file():
@@ -86,6 +87,7 @@ if __name__ == "__main__":
         exit(0)
 
     elif given_path.is_dir():
+        dataset: DatasetFolder = DatasetFolder(given_path)
         # Construct set of directories/categories see distribution
         categories = get_categories(given_path)
         for category in categories:
@@ -100,9 +102,13 @@ if __name__ == "__main__":
 
     # Modify images
     for category in categories:
-        category.modified_images = modify_images(category.files, [])
+        category.augmented_images = modify_images(category.files, [])
 
-    print("Images have been modified\nNow balancing the dataset")
+    # Balance dataset
+    # Create output directories (only relevant for balancing dataset)
+    for _, category_root in dataset.root_dictionnary:
+        Path(f"{output_directory}/{category_root}").mkdir(parents=True, exist_ok=True)
+
     # Create output directories (only relevant for balancing dataset)
     for category in categories:
         Path(category.new_path).mkdir(parents=True, exist_ok=True)
@@ -114,7 +120,7 @@ if __name__ == "__main__":
         # 2 - copy max_count - category.count images in new_path
         if max_count > category.count:
             # todo add a shuffle of modified_images to select them at random
-            for file in category.modified_images[:max_count - category.count]:
+            for file in category.augmented_images[:max_count - category.count]:
                 copy(file, category.new_path)
 
     ###################

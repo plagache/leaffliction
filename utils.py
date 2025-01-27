@@ -19,7 +19,7 @@ class DatasetFolder:
             self.root = Path(root)
         self.samples = self.make_dataset(self.root)
         self.items = self.samples
-        self.classes, self.mapped_dictonnary, self.count_dictionnary = self.find_classes(self.root)
+        self.classes, self.mapped_dictonnary, self.count_dictionnary, self.root_dictionnary, self.indexes_dictionnary = self.find_classes(self.root)
         self.images: Optional[list] = None
         self.numpy: Optional[list] = None
 
@@ -52,17 +52,31 @@ class DatasetFolder:
         """
         mapped_dic = {}
         count_dic = {}
-        data = []
+        root_dic = {}
+        index_dic = {}
         categories = []
-        index = 0
+        category_index = 0
         for root, dirs, files in os.walk(directory, topdown=False):
             category = root if len(root.split("/")) < 1 else root.split("/")[-1]
             if len(files) != 0:
                 categories.append(category)
                 if len(dirs) == 0:
-                    mapped_dic[category] = index
+                    # print(root)
+                    mapped_dic[category] = category_index
+                    root_dic[category] = root
                     count_dic[category] = len(files)
-                index += 1
+
+                    # iterate over files to find the index of "root/file" in the samples
+                    indexes = []
+                    for file in files:
+                        try:
+                            index = self.samples.index(Path(f"{root}/{file}"))
+                            indexes.append(index)
+                        except ValueError:
+                            print(f"{root}/{file} was not found in the samples this should never happened")
+                            exit(-1)
+                    index_dic[category] = indexes
+                category_index += 1
             # How to test if directory/category is relevant?
             # Has at least one file that is not a directory
             # for example images is not a category
@@ -74,7 +88,7 @@ class DatasetFolder:
             #     count += 1
             # if len(dirs) == 0:
             #     data_dic[category] = len(files)
-        return categories, mapped_dic, count_dic
+        return categories, mapped_dic, count_dic, root_dic, index_dic
 
     def make_dataset(self, directory):
         """
