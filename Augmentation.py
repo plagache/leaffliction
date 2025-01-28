@@ -1,10 +1,7 @@
 import argparse
-from  dataclasses import dataclass
 from PIL import Image
 from Augmentor.Operations import Flip, Rotate, Skew, Shear, CropRandom, Distort
 from pathlib import Path
-from shutil import copy
-from Distribution import Category, get_categories
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from utils import DatasetFolder
@@ -21,23 +18,13 @@ def get_modified_images(image):
     }
     return modified_images.items()
 
-def modify_images(images_paths, images_to_show):
-    modified_images = []
-    for count, image_path in enumerate(images_paths, start=1):
-        print(f"processing #{count}", image_path)
-        # todo add tqdm progress bar
-        image = Image.open(image_path)
-
-        if show_image is True:
-            images_to_show.append(("original", image_path))
-
-        for modification, images in get_modified_images(image):
-            output_path = get_modified_image_name(modification, image_path)
-            if show_image is True:
-                images_to_show.append((modification, output_path))
-            modified_images.append(output_path)
-            images[0].save(output_path)
-    return modified_images
+def modify_image(image_path, images_to_show):
+    image = Image.open(image_path)
+    images_to_show.append(("original", image_path))
+    for modification, images in get_modified_images(image):
+        output_path = get_modified_image_name(modification, image_path)
+        images_to_show.append((modification, output_path))
+        images[0].save(output_path)
 
 
 def get_modified_image_name(modification: str, image_path: str) -> str:
@@ -46,7 +33,7 @@ def get_modified_image_name(modification: str, image_path: str) -> str:
     return ".".join(split_image_name)
 
 
-def display_images(images_with_titles: tuple(str, str)):
+def display_images(images_with_titles: tuple[str, str]):
     plt.style.use('dark_background')
     rows = 1
     cols = len(images_with_titles)
@@ -62,6 +49,7 @@ def display_images(images_with_titles: tuple(str, str)):
 
     plt.tight_layout()
     plt.subplots_adjust(top=0.88)
+    plt.savefig(f"augmented images of {images_with_titles[1][1].split('/')[-1]}")
     plt.show()
 
 
@@ -69,59 +57,28 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Augment an image or directories of images")
     parser.add_argument("path", help="the file(s) to augment")
     args = parser.parse_args()
-    print("working with", args.path)
+    print("augmenting in", args.path)
 
     output_directory = "augmented_directory"
 
     given_path = Path(args.path)
 
     max_count: int = -1
-    show_image: bool = False
-    images_to_show: list[tuple(str, str)] = []
-    categories: list[Category] = None
 
     if given_path.is_file():
-        show_image = True
-        modify_images([args.path], images_to_show)
+        images_to_show: list[tuple[str, str]] = []
+        modify_image(args.path, images_to_show)
         display_images(images_to_show)
         exit(0)
 
     elif given_path.is_dir():
         dataset: DatasetFolder = DatasetFolder(given_path)
-        # Construct set of directories/categories see distribution
-        categories = get_categories(given_path)
-        for category in categories:
-            max_count = category.count if category.count > max_count else max_count
-
-            category.files = [ f"{category.path}/{image}" for image in category.files ]
-            category.new_path = f"{output_directory}/{category.path}"
-
+        dataset.to_images()
+        dataset.modify_images()
+        dataset.balance_dataset(output_directory)
     else:
         pass
         # Exception path error
-
-    # Modify images
-    for category in categories:
-        category.augmented_images = modify_images(category.files, [])
-
-    # Balance dataset
-    # Create output directories (only relevant for balancing dataset)
-    for _, category_root in dataset.root_dictionnary:
-        Path(f"{output_directory}/{category_root}").mkdir(parents=True, exist_ok=True)
-
-    # Create output directories (only relevant for balancing dataset)
-    for category in categories:
-        Path(category.new_path).mkdir(parents=True, exist_ok=True)
-        # when dir is created we can then balance this category around the biggest known
-        # 1 - copy all original images in new_path
-        for file in category.files:
-            copy(file, category.new_path)
-
-        # 2 - copy max_count - category.count images in new_path
-        if max_count > category.count:
-            # todo add a shuffle of modified_images to select them at random
-            for file in category.augmented_images[:max_count - category.count]:
-                copy(file, category.new_path)
 
     ###################
 

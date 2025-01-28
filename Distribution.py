@@ -1,37 +1,8 @@
-import os
 import argparse
 import matplotlib.pyplot as plt
-from  dataclasses import dataclass
+from pathlib import Path
 from utils import DatasetFolder
 # plt.switch_backend("qtagg")
-
-
-@dataclass
-class Category:
-    name: str
-    # path: str
-    files: list[str]
-    count: int
-    new_path: str = None
-    augmented_images: list[str] = None
-
-
-def get_categories(directory) -> list[Category]:
-    categories: list[Category] = []
-
-    for root, dirs, files in os.walk(directory, topdown=False):
-        # get the last part of the dirpath
-        category = root if len(root.split("/")) < 1 else root.split("/")[-1]
-        # How to test if directory/category is relevant?
-        # has no files in it and has subdirectories/categories => is irrelevant
-        if len(dirs) == 0:
-            categories.append(Category(category, root, files, len(files)))
-        # print(f"category {category}")
-        # print(f"list of directory in {root}: {dirs}")
-        # print(f"number of files in {root}: {len(files)}")
-        # print("--------------------------------")
-    # print(categories_dic)
-    return categories
 
 
 if __name__ == "__main__":

@@ -81,7 +81,7 @@ get_dataset:
 	${PYTHON} helpers.py
 
 distribution:
-	${PYTHON} Distribution.py images
+	# ${PYTHON} Distribution.py images
 	${PYTHON} Distribution.py augmented_directory
 	# ${PYTHON} Distribution.py images/Apple
 	# ${PYTHON} Distribution.py images/Grape
@@ -92,9 +92,11 @@ augmentation: augmented_directory
 	# ${PYTHON} Augmentation.py images/Apple
 	${PYTHON} Augmentation.py images
 
+reaugmentation: clean extract augmentation
+
 clean:
-	rm -rf images
-	rm -rf augmented_directory
+	rm -rf augmented*
+	rm -rf images*
 
 fclean: clean
 	rm -rf ${VENV}

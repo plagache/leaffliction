@@ -4,8 +4,10 @@ import argparse
 
 # import glob
 import os
+from shutil import copy
 from pathlib import Path
 from typing import Union, Optional
+from Augmentor.Operations import Flip, Rotate, Skew, Shear, CropRandom, Distort
 
 import numpy as np
 from PIL import Image
@@ -17,11 +19,16 @@ class DatasetFolder:
             self.root = root
         else:
             self.root = Path(root)
+        if self.root.is_dir() is False:
+            print("argument provided is not a valid directory")
+            exit(0)
         self.samples = self.make_dataset(self.root)
         self.items = self.samples
         self.classes, self.mapped_dictonnary, self.count_dictionnary, self.root_dictionnary, self.indexes_dictionnary = self.find_classes(self.root)
         self.images: Optional[list] = None
         self.numpy: Optional[list] = None
+        self.augmented_images = {}
+        self.max_count = max(self.count_dictionnary.values())
 
     def find_classes(self, directory):
         """Find the class folders in a dataset structured as follows::
@@ -103,6 +110,65 @@ class DatasetFolder:
         files = list(directory.rglob(pattern))
         samples = [sample for sample in files if os.path.isfile(sample) is True]
         return samples
+
+    def get_modified_images(self, image):
+        modified_images = {
+            "Rotate": Rotate(probability=1, rotation=90).perform_operation([image]),
+            "Flip": Flip(probability=1, top_bottom_left_right="RANDOM").perform_operation([image]),
+            "Skew": Skew(probability=1, skew_type="TILT", magnitude=1).perform_operation([image]),
+            "Shear": Shear(probability=1, max_shear_left=20, max_shear_right=20).perform_operation([image]),
+            "Crop": CropRandom(probability=1, percentage_area=0.8).perform_operation([image]),
+            "Distortion": Distort(probability=1, grid_width=2, grid_height=2, magnitude=9).perform_operation([image]),
+        }
+        return modified_images.items()
+
+    def get_modified_image_name(self, modification: str, image_path) -> str:
+        image_name = str(image_path)
+        split_image_name = image_name.split(".")
+        split_image_name[0] = f"{split_image_name[0]}_{modification}"
+        return ".".join(split_image_name)
+
+    def modify_images(self):
+        for name, indexes in self.indexes_dictionnary.items():
+            print(f"augmenting images for category: {name}")
+
+            augmented_images = []
+            for index in indexes:
+                file_pathname = self.samples[index]
+                image = self.images[index]
+
+                # print(f"working on {file_pathname}")
+                for modification, images in self.get_modified_images(image):
+                    output_path = self.get_modified_image_name(modification, file_pathname)
+                    augmented_images.append(output_path)
+                    images[0].save(output_path)
+            self.augmented_images[name] = augmented_images
+        return self
+
+    def get_from_categories(self, items: list, category: str):
+        return list(map(lambda i: items[i], self.indexes_dictionnary[category]))
+
+    def balance_dataset(self, output_directory: str):
+        # Balance dataset
+        # Create output directories (only relevant for balancing dataset)
+        for category_name in self.classes:
+            print(f"balancing category: {category_name}")
+            new_path: str = f"{output_directory}/{self.root_dictionnary[category_name]}"
+            Path(new_path).mkdir(parents=True, exist_ok=True)
+
+            # 1 - copy all original images in new_path
+            for file in self.get_from_categories(self.samples, category_name):
+                copy(file, new_path)
+
+            # when dir is created we can then balance this category around the biggest known
+            # 2 - copy max_count - category.count images in new_path
+            category_count = self.count_dictionnary[category_name]
+            augmented_images = self.augmented_images[category_name]
+            if self.max_count > category_count:
+                # todo add a shuffle of modified_images to select them at random
+                for file in augmented_images[:self.max_count - category_count]:
+                    copy(file, new_path)
+        return self
 
     def to_path(self):
         self.items = self.samples
