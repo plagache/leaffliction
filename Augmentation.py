@@ -57,13 +57,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Augment an image or directories of images")
     parser.add_argument("path", help="the file(s) to augment")
     args = parser.parse_args()
+
     print("augmenting in", args.path)
 
     output_directory = "augmented_directory"
 
     given_path = Path(args.path)
-
-    max_count: int = -1
 
     if given_path.is_file():
         images_to_show: list[tuple[str, str]] = []
@@ -76,6 +75,7 @@ if __name__ == "__main__":
         dataset.to_images()
         dataset.modify_images()
         dataset.balance_dataset(output_directory)
+        exit(0)
     else:
         pass
         # Exception path error

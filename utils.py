@@ -24,13 +24,19 @@ class DatasetFolder:
             exit(0)
         self.samples = self.make_dataset(self.root)
         self.items = self.samples
-        self.classes, self.mapped_dictonnary, self.count_dictionnary, self.root_dictionnary, self.indexes_dictionnary = self.find_classes(self.root)
+
+        self.classes: Optional[list[str]] = None
+        self.mapped_dictionnary: Optional[dict[str, int]] = None
+        self.count_dictionnary: dict[str, int] = {}
+        self.root_dictionnary: dict[str, str] = {}
+        self.indexes_dictionnary: dict[str, list[int]] = {}
+        self.__find_classes(self.root)
         self.images: Optional[list] = None
         self.numpy: Optional[list] = None
         self.augmented_images = {}
         self.max_count = max(self.count_dictionnary.values())
 
-    def find_classes(self, directory):
+    def __find_classes(self, directory):
         """Find the class folders in a dataset structured as follows::
 
             directory/
@@ -57,45 +63,43 @@ class DatasetFolder:
             'monkey': 2
             }
         """
-        mapped_dic = {}
-        count_dic = {}
-        root_dic = {}
-        index_dic = {}
-        categories = []
-        category_index = 0
-        for root, dirs, files in os.walk(directory, topdown=False):
-            category = root if len(root.split("/")) < 1 else root.split("/")[-1]
-            if len(files) != 0:
-                categories.append(category)
-                if len(dirs) == 0:
-                    # print(root)
-                    mapped_dic[category] = category_index
-                    root_dic[category] = root
-                    count_dic[category] = len(files)
+        if self.classes is None or self.mapped_dictionnary is None:
+            self.classes = []
+            self.mapped_dictionnary = {}
+            category_index = 0
+            for root, dirs, files in os.walk(directory, topdown=False):
+                category = root if len(root.split("/")) < 1 else root.split("/")[-1]
+                if len(files) != 0:
+                    self.classes.append(category)
+                    if len(dirs) == 0:
+                        # print(root)
+                        self.mapped_dictionnary[category] = category_index
+                        self.root_dictionnary[category] = root
+                        self.count_dictionnary[category] = len(files)
 
-                    # iterate over files to find the index of "root/file" in the samples
-                    indexes = []
-                    for file in files:
-                        try:
-                            index = self.samples.index(Path(f"{root}/{file}"))
-                            indexes.append(index)
-                        except ValueError:
-                            print(f"{root}/{file} was not found in the samples this should never happened")
-                            exit(-1)
-                    index_dic[category] = indexes
-                category_index += 1
-            # How to test if directory/category is relevant?
-            # Has at least one file that is not a directory
-            # for example images is not a category
-            # but a subdirectories with one image is
-            # count = 0
-            # for category in categories:
-            #     if len(dirs) == 0:
-            #         data_dic[category] = count
-            #     count += 1
-            # if len(dirs) == 0:
-            #     data_dic[category] = len(files)
-        return categories, mapped_dic, count_dic, root_dic, index_dic
+                        # iterate over files to find the index of "root/file" in the samples
+                        indexes = []
+                        for file in files:
+                            try:
+                                index = self.samples.index(Path(f"{root}/{file}"))
+                                indexes.append(index)
+                            except ValueError:
+                                print(f"{root}/{file} was not found in the samples this should never happened")
+                                exit(-1)
+                        self.indexes_dictionnary[category] = indexes
+                    category_index += 1
+                # How to test if directory/category is relevant?
+                # Has at least one file that is not a directory
+                # for example images is not a category
+                # but a subdirectories with one image is
+                # count = 0
+                # for category in categories:
+                #     if len(dirs) == 0:
+                #         data_dic[category] = count
+                #     count += 1
+                # if len(dirs) == 0:
+                #     data_dic[category] = len(files)
+        return self.classes, self.mapped_dictionnary
 
     def make_dataset(self, directory):
         """
@@ -111,7 +115,7 @@ class DatasetFolder:
         samples = [sample for sample in files if os.path.isfile(sample) is True]
         return samples
 
-    def get_modified_images(self, image):
+    def __get_modified_images(self, image):
         modified_images = {
             "Rotate": Rotate(probability=1, rotation=90).perform_operation([image]),
             "Flip": Flip(probability=1, top_bottom_left_right="RANDOM").perform_operation([image]),
@@ -122,9 +126,8 @@ class DatasetFolder:
         }
         return modified_images.items()
 
-    def get_modified_image_name(self, modification: str, image_path) -> str:
-        image_name = str(image_path)
-        split_image_name = image_name.split(".")
+    def __get_modified_image_name(self, modification: str, image_path) -> str:
+        split_image_name = str(image_path).split(".")
         split_image_name[0] = f"{split_image_name[0]}_{modification}"
         return ".".join(split_image_name)
 
@@ -137,15 +140,14 @@ class DatasetFolder:
                 file_pathname = self.samples[index]
                 image = self.images[index]
 
-                # print(f"working on {file_pathname}")
-                for modification, images in self.get_modified_images(image):
-                    output_path = self.get_modified_image_name(modification, file_pathname)
+                for modification, images in self.__get_modified_images(image):
+                    output_path = self.__get_modified_image_name(modification, file_pathname)
                     augmented_images.append(output_path)
                     images[0].save(output_path)
             self.augmented_images[name] = augmented_images
         return self
 
-    def get_from_categories(self, items: list, category: str):
+    def get_items_from_categories(self, items: list, category: str):
         return list(map(lambda i: items[i], self.indexes_dictionnary[category]))
 
     def balance_dataset(self, output_directory: str):
@@ -157,7 +159,7 @@ class DatasetFolder:
             Path(new_path).mkdir(parents=True, exist_ok=True)
 
             # 1 - copy all original images in new_path
-            for file in self.get_from_categories(self.samples, category_name):
+            for file in self.get_items_from_categories(self.samples, category_name):
                 copy(file, new_path)
 
             # when dir is created we can then balance this category around the biggest known
@@ -165,7 +167,7 @@ class DatasetFolder:
             category_count = self.count_dictionnary[category_name]
             augmented_images = self.augmented_images[category_name]
             if self.max_count > category_count:
-                # todo add a shuffle of modified_images to select them at random
+                # todo add a shuffle of augmented_images to select them at random
                 for file in augmented_images[:self.max_count - category_count]:
                     copy(file, new_path)
         return self
@@ -205,7 +207,7 @@ class DatasetFolder:
         # sample = self.samples[index]
 
         class_index = None
-        for key, value in self.mapped_dictonnary.items():
+        for key, value in self.mapped_dictionnary.items():
             if key in str(self.samples[index]):
                 class_index = value
 
@@ -245,7 +247,7 @@ if __name__ == "__main__":
     # print(file_path.read_bytes())
 
     print(dataset.classes)
-    print(dataset.mapped_dictonnary)
+    print(dataset.mapped_dictionnary)
 
     # print(dataset.images)
     # dataset.to_images()
