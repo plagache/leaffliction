@@ -4,4 +4,5 @@ images/
 activate
 leaves.zip
 **/*.jpg
+**/*.JPG
 Session.vim
