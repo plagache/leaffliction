@@ -4,6 +4,8 @@ PyQt6           # lib graphic
 flake8          # norme
 Augmentor       # image augmentation library 589M 20 packages
 numpy
-# opencv-python   # Open Computer Vision
+# tinygrad
+opencv-python   # Open Computer Vision
+plantcv         # Plant Computer Vision module
 # pillow          # python image library # already in Augmentor
 # imgaug          # image augmentation library 941M 27 packages integrate scipy scikit-image opencv-python networkx
