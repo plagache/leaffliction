@@ -131,7 +131,7 @@ class DatasetFolder:
         split_image_name[0] = f"{split_image_name[0]}_{modification}"
         return ".".join(split_image_name)
 
-    def modify_images(self):
+    def augment_images(self):
         for name, indexes in self.indexes_dictionnary.items():
             print(f"augmenting images for category: {name}")
 
@@ -213,7 +213,7 @@ class DatasetFolder:
     #
     #     return (self.items[index], class_index)
 
-    def __getitem__(self, start: int, stop: int = None):
+    def __getitem__(self, index: int | slice):
         # def __getitem__(self, index: int) -> Tuple[Any, Any]:
         """
         Inputs:
@@ -222,19 +222,26 @@ class DatasetFolder:
         Outputs:
             tuple: (sample, target) where target is class_index of the target class.
         """
-        index = start
-        if stop is None:
-            end = start + 1
-        else:
-            end = stop
+        start = index
+        stop, step = None, None
 
-        elements = list()
-        for element in range(start, end):
+        if isinstance(index, slice):
+            start, stop, step = index.indices(len(self))
+
+        if stop is None:
+            stop = start + 1
+        if step is None:
+            step = 1
+
+        elements = []
+        for index in range(start, stop, step):
             class_index = None
-            for key, value in self.mapped_dictonnary.items():
+            for key, value in self.mapped_dictionnary.items():
                 if key in str(self.samples[index]):
                     class_index = value
             elements.append((self.items[index], class_index))
+        if len(elements) == 1:
+            return elements[0]
         return elements
 
         # return (self.items[index:end:stride], class_index)
@@ -263,8 +270,8 @@ class Dataloaders:
     def __iter__(self):
         self.index = 0
         while self.index + self.batch_size < len(self.dataset):
+            yield tuple(self.dataset[self.index : self.index + self.batch_size])
             self.index += self.batch_size
-            yield tuple(self.dataset[self.index - self.batch_size: self.index])
         # return self
         # if self.dataset.numpy is None:
         #     self.dataset.to_numpy()
@@ -315,7 +322,7 @@ if __name__ == "__main__":
     # print(file_path.read_bytes())
 
     # print(dataset.classes)
-    # print(dataset.mapped_dictonnary)
+    # print(dataset.mapped_dictionnary)
     print(dataset.classes)
     print(dataset.mapped_dictionnary)
 

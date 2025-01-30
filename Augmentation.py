@@ -73,7 +73,7 @@ if __name__ == "__main__":
     elif given_path.is_dir():
         dataset: DatasetFolder = DatasetFolder(given_path)
         dataset.to_images()
-        dataset.modify_images()
+        dataset.augment_images()
         dataset.balance_dataset(output_directory)
         exit(0)
     else:
