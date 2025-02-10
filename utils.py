@@ -66,7 +66,8 @@ class DatasetFolder:
             self.classes = []
             self.mapped_dictionnary = {}
             category_index = 0
-            for root, dirs, files in directory.walk(topdown=False):
+            for root, dirs, files in directory.walk(top_down=False):
+                root = str(root)
                 category = root if len(root.split("/")) < 1 else root.split("/")[-1]
                 if len(files) != 0:
                     self.classes.append(category)
@@ -111,7 +112,7 @@ class DatasetFolder:
         # files = glob.glob(pathname, recursive=True)
         pattern = "*"
         files = list(directory.rglob(pattern))
-        samples = [sample for sample in files if Path.isfile(sample) is True]
+        samples = [sample for sample in files if Path.is_file(sample) is True]
         return samples
 
     def __get_modified_images(self, image):
