@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import argparse
 
-# import glob
-import os
+from random import sample
 from shutil import copy
 from pathlib import Path
 from typing import Union, Optional
@@ -36,7 +35,7 @@ class DatasetFolder:
         self.augmented_images = {}
         self.max_count = max(self.count_dictionnary.values())
 
-    def __find_classes(self, directory):
+    def __find_classes(self, directory: Path):
         """Find the class folders in a dataset structured as follows::
 
             directory/
@@ -67,7 +66,7 @@ class DatasetFolder:
             self.classes = []
             self.mapped_dictionnary = {}
             category_index = 0
-            for root, dirs, files in os.walk(directory, topdown=False):
+            for root, dirs, files in directory.walk(topdown=False):
                 category = root if len(root.split("/")) < 1 else root.split("/")[-1]
                 if len(files) != 0:
                     self.classes.append(category)
@@ -101,7 +100,7 @@ class DatasetFolder:
                 #     data_dic[category] = len(files)
         return self.classes, self.mapped_dictionnary
 
-    def make_dataset(self, directory):
+    def make_dataset(self, directory: Path):
         """
         Inputs:
             directory(str): Root directory path, corresponding to ``self.root``
@@ -112,7 +111,7 @@ class DatasetFolder:
         # files = glob.glob(pathname, recursive=True)
         pattern = "*"
         files = list(directory.rglob(pattern))
-        samples = [sample for sample in files if os.path.isfile(sample) is True]
+        samples = [sample for sample in files if Path.isfile(sample) is True]
         return samples
 
     def __get_modified_images(self, image):
@@ -168,7 +167,7 @@ class DatasetFolder:
             augmented_images = self.augmented_images[category_name]
             if self.max_count > category_count:
                 # todo add a shuffle of augmented_images to select them at random
-                for file in augmented_images[:self.max_count - category_count]:
+                for file in sample(augmented_images, self.max_count - category_count):
                     copy(file, new_path)
         return self
 
