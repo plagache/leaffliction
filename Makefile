@@ -81,8 +81,8 @@ get_dataset:
 	${PYTHON} helpers.py
 
 distribution:
-	# ${PYTHON} Distribution.py images
-	${PYTHON} Distribution.py augmented_directory
+	${PYTHON} Distribution.py images
+	# ${PYTHON} Distribution.py augmented_directory
 	# ${PYTHON} Distribution.py images/Apple
 	# ${PYTHON} Distribution.py images/Grape
 
@@ -91,6 +91,9 @@ augmentation: augmented_directory
 	# ${PYTHON} Augmentation.py images/Apple/Apple_healthy
 	# ${PYTHON} Augmentation.py images/Apple
 	${PYTHON} Augmentation.py images
+
+transformation:
+	${PYTHON} Transformation.py images
 
 reaugmentation: clean extract augmentation
 

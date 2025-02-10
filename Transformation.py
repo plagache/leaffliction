@@ -42,7 +42,7 @@ if __name__ == "__main__":
     pil_image = Image.open(path)
     numpy_image = np.asarray(pil_image)
 
-    # gaussian_blur(numpy_image)
+    gaussian_blur(numpy_image)
     canny_edge_detection(numpy_image)
 
     pil_image.show()

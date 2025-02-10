@@ -1,6 +1,5 @@
 import argparse
 import matplotlib.pyplot as plt
-from pathlib import Path
 from utils import DatasetFolder
 # plt.switch_backend("qtagg")
 
