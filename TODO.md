@@ -18,6 +18,11 @@ inputs url, pathlib, subdir, gzip:Optional[method], return path with data
 - train model
 - classify new inputs from data validation
 
+- clean Utils
+
+- Test
+    - Test distribution with different structure of directories
+
 # Question
 
 what type of augmentation is interesting ?

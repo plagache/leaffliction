@@ -42,13 +42,13 @@ download:
 
 extract: download
 	unzip leaves.zip
-	mkdir -p images/Apple images/Grape
-	mkdir -p images/Apple/toto
-	mkdir -p images/Apple/tato/tota/
-	mv images/Apple_Black_rot images/Apple/toto/
-	mv images/Apple_rust images/Apple/tato/tota/
-	mv images/Apple_* images/Apple/
-	mv images/Grape_* images/Grape/
+	# mkdir -p images/Apple images/Grape
+	# mkdir -p images/Apple/toto
+	# mkdir -p images/Apple/tato/tota/
+	# mv images/Apple_Black_rot images/Apple/toto/
+	# mv images/Apple_rust images/Apple/tato/tota/
+	# mv images/Apple_* images/Apple/
+	# mv images/Grape_* images/Grape/
 
 augmented_directory:
 	mkdir -p augmented_directory
