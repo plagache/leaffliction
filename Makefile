@@ -97,6 +97,9 @@ transformation:
 
 reaugmentation: clean extract augmentation
 
+test:
+	${PYTHON} test_utils.py -v
+
 clean:
 	rm -rf augmented*
 	rm -rf images*
