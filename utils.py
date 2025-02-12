@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from os import strerror
 import errno
-from random import sample
+from random import sample, shuffle
 from shutil import copy
 from pathlib import Path
 from typing import Union, Optional, Self
@@ -236,17 +236,38 @@ class Dataloader:
     we give a type(Dataset) to this Loaders a batch size, and a bunch of other parameters to this class and it fetch the data for us
     """
 
-    def __init__(self, dataset: DatasetFolder, batch_size: int):
+    def __init__(self, dataset: DatasetFolder, batch_size: int, shuffle: bool = False):
         self.dataset: DatasetFolder = dataset
         self.batch_size: int = batch_size
+        self.shuffle: bool = shuffle
+        self.indices: list(int) = list(range(len(self.dataset)))
 
-    """
-    object on wich we want to iterate (must be iterable)
-    e. g. our dataset
-    """
+    def _reset_indices(self):
+        self.indices: list(int) = list(range(len(self.dataset)))
+        return self
 
     def __iter__(self) -> tuple:
+        """
+        object on wich we want to iterate (must be iterable)
+        e. g. our dataset
+        """
         self.index = 0
+        if self.shuffle is True:
+            shuffle(self.indices)
+        else:
+            self._reset_indices()
+
         while self.index + self.batch_size < len(self.dataset):
-            yield tuple(self.dataset[self.index : self.index + self.batch_size])
+            # batch_size number of indices
+            batch_indices = self.indices[self.index : self.index + self.batch_size]
+            batch = [self.dataset[index] for index in batch_indices]
+            yield tuple(batch)
             self.index += self.batch_size
+
+    def show_batch(self):
+        # Find a batch 
+        # Match class_index from batch with category_name
+        # use display images from Augmentation
+        batch = next(iter(self))
+        print(batch)
+        pass

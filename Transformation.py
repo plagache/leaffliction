@@ -114,14 +114,21 @@ if __name__ == "__main__":
     dataset = DatasetFolder(args.directory)
 
     dataloader = Dataloader(dataset, batch_size=5, shuffle=True)
-    print(dataloader.indices)
+    # print(dataloader.indices)
     # Add the plotting of all transformation with plantcv
     pcv.params.debug = "plot"
 
-    print(dataloader)
-    one_batch = next(iter(dataloader))
-    print(dataloader.indices)
-    print(one_batch)
+    # THIS WILL BE A TEST CASE IN TEST_UTILS.PY
+    # one_batch = next(iter(dataloader))
+    # # print(dataloader.indices)
+    # print(one_batch)
+    #
+    # dataloader.shuffle = False
+    #
+    # one_batch = next(iter(dataloader))
+    # # print(dataloader.indices)
+    # print(one_batch)
+
     # i do not want to compute all images at each run
     path, class_index = dataset[2]
     print(path)

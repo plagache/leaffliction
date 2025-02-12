@@ -5,7 +5,7 @@ inputs url, pathlib, subdir, gzip:Optional[method], return path with data
 # Plan
 
 - get data
-- add shuffle to dataloader
+<!--- add shuffle to dataloader-->
 - add show batch
 - show one item of each category
 <!--    - check data integrety-->
@@ -22,7 +22,7 @@ inputs url, pathlib, subdir, gzip:Optional[method], return path with data
 - train model
 - classify new inputs from data validation
 
-- clean Utils
+<!--- clean Utils-->
 
 - Test
     - Test distribution with different structure of directories
