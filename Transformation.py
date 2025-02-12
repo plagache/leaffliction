@@ -6,8 +6,8 @@ from plantcv import plantcv as pcv
 from PIL import Image
 # from tinygrad import Tensor, nn
 
-from utils import DatasetFolder
-
+import matplotlib.pyplot as plt
+from utils import DatasetFolder, Dataloader
 
 
 def gaussian_blur(numpy_array):
@@ -53,7 +53,8 @@ def testing_mask(numpy_array, img):
     hsv_img = pcv.rgb2gray_hsv(rgb_img=img, channel="h")
 
     # Apply a threshold to isolate the leaf
-    binary_mask = pcv.threshold.binary(gray_img=hsv_img, threshold=100, object_type="light")
+    binary_mask = pcv.threshold.binary(gray_img=hsv_img, threshold=110, object_type="dark")
+    # binary_mask = pcv.threshold.binary(gray_img=hsv_img, threshold=100, object_type="light")
 
     # Apply the mask
     masked_image = pcv.apply_mask(img=img, mask=binary_mask, mask_color="white")
@@ -77,8 +78,30 @@ def testing_binary_mask(numpy_array, img):
     cv.imshow("Grayscale Image", gray)
     cv.imshow("Binary Image", binary)
     cv.imshow("Masked Image", masked_img)
-    cv.waitKey(0)
-    cv.destroyAllWindows()
+    return
+
+
+def segmentation(numpy_array, img):
+    # analyse the colorspaces
+    colorspace_img = pcv.visualize.colorspaces(rgb_img=numpy_array, original_img=False)
+    # choose a channel that correctly separate background and the leaf
+    grayscale_img = pcv.rgb2gray_hsv(rgb_img=numpy_array, channel="s")
+    # grayscale_img = pcv.rgb2gray_lab(rgb_img=numpy_array, channel="a")
+    # plot the histogram of the grayscale values
+    # hist = pcv.visualize.histogram(img=grayscale_img, bins=30)
+    # plt.figure()
+    # plt.hist(grayscale_img.ravel(), bins=30, range=[0, 255])
+    # plt.title('grayscale image histogram')
+    # plt.xlabel('pixel intensity')
+    # plt.ylabel('Frequency')
+    # plt.show()
+    # set_thresh = pcv.threshold.binary(gray_img=grayscale_img, threshold=80, object_type="light")
+    auto_thresh = pcv.threshold.otsu(gray_img=grayscale_img, object_type="light")
+    fill_image = pcv.fill_holes(bin_img=auto_thresh)
+    roi = pcv.roi.circle(fill_image, x=125, y=125, r=100)
+    kept_mask  = pcv.roi.filter(mask=fill_image, roi=roi, roi_type='partial')
+    analysis_image = pcv.analyze.size(img=img, labeled_mask=kept_mask)
+
     return
 
 
@@ -90,9 +113,15 @@ if __name__ == "__main__":
     # dataset = DatasetFolder(Path(args.directory))
     dataset = DatasetFolder(args.directory)
 
+    dataloader = Dataloader(dataset, batch_size=5, shuffle=True)
+    print(dataloader.indices)
     # Add the plotting of all transformation with plantcv
     pcv.params.debug = "plot"
 
+    print(dataloader)
+    one_batch = next(iter(dataloader))
+    print(dataloader.indices)
+    print(one_batch)
     # i do not want to compute all images at each run
     path, class_index = dataset[2]
     print(path)
@@ -103,7 +132,8 @@ if __name__ == "__main__":
     # gaussian_blur(numpy_image)
     # canny_edge_detection(numpy_image)
     # roi_detection(numpy_image, cv_image)
-    testing_binary_mask(numpy_image, cv_image)
-    testing_mask(numpy_image, cv_image)
+    # testing_mask(numpy_image, cv_image)
+    # testing_binary_mask(numpy_image, cv_image)
+    segmentation(numpy_image, cv_image)
 
     # pil_image.show()

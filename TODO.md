@@ -5,6 +5,9 @@ inputs url, pathlib, subdir, gzip:Optional[method], return path with data
 # Plan
 
 - get data
+- add shuffle to dataloader
+- add show batch
+- show one item of each category
 <!--    - check data integrety-->
 <!--    - normalization / resize-->
 <!--    - distribution-->
@@ -14,6 +17,7 @@ inputs url, pathlib, subdir, gzip:Optional[method], return path with data
 - create data validation / training batches
 - setup labels to detecte categories
 - transform dataset to detect features from categories
+    - test pixel intensity to determine threshold
     <!--- What count as data transformation: Convolution/-->
 - train model
 - classify new inputs from data validation
