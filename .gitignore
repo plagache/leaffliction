@@ -6,3 +6,4 @@ leaves.zip
 **/*.jpg
 **/*.JPG
 Session.vim
+debug/
