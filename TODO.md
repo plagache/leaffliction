@@ -26,6 +26,8 @@ inputs url, pathlib, subdir, gzip:Optional[method], return path with data
 
 - Test
     - Test distribution with different structure of directories
+- transformation
+    - usage with argparse handle single file and directory
 
 # Question
 
