@@ -50,6 +50,9 @@ extract: download
 	# mv images/Apple_* images/Apple/
 	# mv images/Grape_* images/Grape/
 
+debug_directory:
+	mkdir -p debug
+
 augmented_directory:
 	mkdir -p augmented_directory
 
@@ -92,8 +95,14 @@ augmentation: augmented_directory
 	# ${PYTHON} Augmentation.py images/Apple
 	${PYTHON} Augmentation.py images
 
-transformation:
-	${PYTHON} Transformation.py images
+transformation: debug_directory
+	${PYTHON} Transformation.py "images/Apple/Apple_healthy/image (9).JPG"
+	${PYTHON} Transformation.py -src images -dst debug
+	# This usage are incorect and throws error
+	# ${PYTHON} Transformation.py -src images -dst
+	# ${PYTHON} Transformation.py -src -dst debug
+	# ${PYTHON} Transformation.py -src images -dst debug "images/Apple/Apple_healthy/image (9).JPG"
+	# ${PYTHON} Transformation.py debug "images/Apple/Apple_healthy/image (9).JPG"
 
 reaugmentation: clean extract augmentation
 
@@ -101,6 +110,7 @@ test:
 	${PYTHON} test_utils.py -v
 
 clean:
+	rm -rf debug*
 	rm -rf augmented*
 	rm -rf images*
 

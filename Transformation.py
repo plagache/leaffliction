@@ -64,10 +64,21 @@ def segmentation(numpy_array, img):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="testing the Transformation of open CV class")
-    parser.add_argument("directory", help="the directory to parse")
+    parser.add_argument("-src", help="the directory to parse from", required=False)
+    parser.add_argument("-dst", help="the directory to write to", required=False)
+    parser.add_argument("filename", help="a single filename to transform", nargs="?", default=None)
     args = parser.parse_args()
 
-    # dataset = DatasetFolder(Path(args.directory))
+    print(f"found argument {args}")
+
+    if args.filename and not (args.src or args.dst):
+        print(f"Processing file: {args.filename}")
+    elif args.src and args.dst and not args.filename:
+        print(f"Reading from source: {args.src} and write to destination: {args.dst}")
+    else:
+        parser.error("You must provide either a filename or both -src and -dst options.")
+        parser.print_help()
+
     dataset = DatasetFolder(args.directory)
 
     dataloader = Dataloader(dataset, batch_size=3, shuffle=True)
