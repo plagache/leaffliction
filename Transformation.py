@@ -79,7 +79,7 @@ if __name__ == "__main__":
         parser.error("You must provide either a filename or both -src and -dst options.")
         parser.print_help()
 
-    dataset = DatasetFolder(args.directory)
+    dataset = DatasetFolder(args.src)
 
     dataloader = Dataloader(dataset, batch_size=3, shuffle=True)
     # print(dataloader.indices)

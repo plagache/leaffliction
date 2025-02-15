@@ -13,6 +13,17 @@ make setup
 
 ### Mandatory part
 
+```sh
+# Source and activate the environement
+source activate
+```
+
+```sh
+# Transform images
+python Transformation.py -src images -dst debug
+# python Transformation.py "images/Apple/Apple_healthy/image (9).JPG"
+```
+
 ```bash
 # display information about the nvidia graphic card in use
 make nvidia
