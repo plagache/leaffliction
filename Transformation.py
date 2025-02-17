@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from utils import DatasetFolder, Dataloader
 
 
-def gaussian_blur(numpy_array):
+def gaussian_blur(numpy_image):
     # opencv_gaussian_blur = cv.GaussianBlur(numpy_image, (5, 5), 0)
     plantcv_gaussian_blur = pcv.gaussian_blur(numpy_image, (5, 5), 0)
 

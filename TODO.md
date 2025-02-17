@@ -20,6 +20,7 @@ inputs url, pathlib, subdir, gzip:Optional[method], return path with data
     - test pixel intensity to determine threshold
     <!--- What count as data transformation: Convolution/-->
 - train model
+    - test cnn from tinygrad mnist example to train
 - classify new inputs from data validation
 
 <!--- clean Utils-->
