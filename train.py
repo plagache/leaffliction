@@ -4,7 +4,7 @@ import timeit
 from tinygrad import Context, Device, GlobalCounters, Tensor, TinyJit, nn
 from tinygrad.nn.datasets import mnist
 
-from utils import DatasetFolder
+from utils import DatasetFolder, Dataloader
 
 # watch -n0.1 nvidia-smi
 
@@ -27,7 +27,7 @@ class Model:
 
 X_train, Y_train, X_test, Y_test = mnist()
 print(X_train.shape, X_train.dtype, Y_train.shape, Y_train.dtype)
-print(X_train[0], Y_train[0])
+print(X_train, Y_train)
 
 
 parser = argparse.ArgumentParser(description="analyse a dataset from a given directory")
@@ -35,9 +35,10 @@ parser.add_argument("directory", help="the directory to parse")
 args = parser.parse_args()
 
 folder: DatasetFolder = DatasetFolder(args.directory)
-folder.to_numpy()
-print(folder[0])
-exit()
+loader: Dataloader = Dataloader(folder, 1000)
+loader.get_tensor()
+# print(folder[0])
+exit(0)
 # (60000, 1, 28, 28) dtypes.uchar (60000,) dtypes.uchar
 
 model = Model()

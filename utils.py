@@ -7,6 +7,7 @@ from shutil import copy
 from pathlib import Path
 from typing import Union, Optional, Self
 from Augmentor.Operations import Flip, Rotate, Skew, Shear, CropRandom, Distort
+from tinygrad import Tensor
 
 import numpy as np
 from PIL import Image
@@ -30,7 +31,7 @@ class DatasetFolder:
         self.indices_dictionnary: dict[str, list[int]] = {}
         self.__find_classes(self.root)
         self.images: Optional[list] = None
-        self.numpy: Optional[list] = None
+        self.numpy_arrays: Optional[list] = None
         self.augmented_images = {}
         self.max_count = max(self.count_dictionnary.values())
 
@@ -177,9 +178,9 @@ class DatasetFolder:
     def to_numpy(self) -> Self:
         if self.images is None:
             self.to_images()
-        if self.numpy is None:
-            self.numpy = np.asarray(self.images)
-        self.items = self.numpy
+        if self.numpy_arrays is None:
+            self.numpy_arrays = np.asarray(self.images)
+        self.items = self.numpy_arrays
         return self
 
     def to_images(self) -> Self:
@@ -241,6 +242,7 @@ class Dataloader:
         self.batch_size: int = batch_size
         self.shuffle: bool = shuffle
         self.indices: list(int) = list(range(len(self.dataset)))
+        self.tensor: Tensor = None
 
     def _reset_indices(self):
         self.indices: list(int) = list(range(len(self.dataset)))
@@ -271,3 +273,22 @@ class Dataloader:
         batch = next(iter(self))
         print(batch)
         pass
+    
+    def get_tensor(self) -> tuple(Tensor, Tensor):
+        """
+        Return the X_train, Y_train as tinygrad.Tensor from the dataset
+        from images numpy arrays create a unique Tensor containing all the dataset => X_train
+        see getitem to retrieve class index => Y_train
+        """
+        if self.dataset.numpy_arrays is None:
+            self.dataset.to_numpy()
+
+        simple_array = np.concatenate(self.dataset.numpy_arrays)
+        self.tensor = Tensor(simple_array)
+        self.tensor = self.tensor.reshape(-1,3,256,256)
+        npo = self.dataset.numpy_arrays[0].reshape(3,256,256)
+        npt = self.tensor[0].numpy()
+        print(npo)
+        print(npt)
+        print(npo == npt)
+        return self.tensor
