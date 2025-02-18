@@ -242,7 +242,7 @@ class Dataloader:
         self.batch_size: int = batch_size
         self.shuffle: bool = shuffle
         self.indices: list(int) = list(range(len(self.dataset)))
-        self.tensor: Tensor = None
+        self.x_tensor: Tensor = None
 
     def _reset_indices(self):
         self.indices: list(int) = list(range(len(self.dataset)))
@@ -267,13 +267,13 @@ class Dataloader:
             self.index += self.batch_size
 
     def show_batch(self):
-        # Find a batch 
+        # Find a batch
         # Match class_index from batch with category_name
         # use display images from Augmentation
         batch = next(iter(self))
         print(batch)
         pass
-    
+
     def get_tensor(self) -> tuple(Tensor, Tensor):
         """
         Return the X_train, Y_train as tinygrad.Tensor from the dataset
@@ -284,11 +284,11 @@ class Dataloader:
             self.dataset.to_numpy()
 
         simple_array = np.concatenate(self.dataset.numpy_arrays)
-        self.tensor = Tensor(simple_array)
-        self.tensor = self.tensor.reshape(-1,3,256,256)
-        npo = self.dataset.numpy_arrays[0].reshape(3,256,256)
-        npt = self.tensor[0].numpy()
-        print(npo)
-        print(npt)
-        print(npo == npt)
-        return self.tensor
+
+        labels_array = np.zeros(len(self.dataset))
+        for label, indices in self.dataset.indices_dictionnary.items():
+            np.put(labels_array, indices, self.dataset.mapped_dictionnary[label])
+        self.y_tensor = Tensor(labels_array)
+        self.x_tensor = Tensor(simple_array)
+        self.x_tensor = self.x_tensor.reshape(-1, 3, 256, 256)
+        return self.x_tensor, self.y_tensor

@@ -10,24 +10,21 @@ from utils import DatasetFolder, Dataloader
 
 # gcc13-13.3.0-1  gcc13-libs-13.3.0-1  opencl-nvidia-565.57.01-1  cuda-12.6.2-2
 
-print(Device.DEFAULT)
+# print(Device.DEFAULT)
 
 
 class Model:
-    def __init__(self):
-        self.l1 = nn.Conv2d(1, 32, kernel_size=(3, 3))
-        self.l2 = nn.Conv2d(32, 64, kernel_size=(3, 3))
-        self.l3 = nn.Linear(1600, 10)
+    def __init__(self, num_classes):
+        self.l1 = nn.Conv2d(3, 64, kernel_size=(3, 3), padding=1)
+        self.l2 = nn.Conv2d(64, 128, kernel_size=(3, 3), padding=1)
+        self.l3 = nn.Conv2d(128, 256, kernel_size=(3, 3), padding=1)
+        self.l4 = nn.Linear(256 * 32 * 32, num_classes)
 
     def __call__(self, x: Tensor) -> Tensor:
         x = self.l1(x).relu().max_pool2d((2, 2))
         x = self.l2(x).relu().max_pool2d((2, 2))
-        return self.l3(x.flatten(1).dropout(0.5))
-
-
-X_train, Y_train, X_test, Y_test = mnist()
-print(X_train.shape, X_train.dtype, Y_train.shape, Y_train.dtype)
-print(X_train, Y_train)
+        x = self.l3(x).relu().max_pool2d((2, 2))
+        return self.l4(x.flatten(1).dropout(0.5))
 
 
 parser = argparse.ArgumentParser(description="analyse a dataset from a given directory")
@@ -35,13 +32,17 @@ parser.add_argument("directory", help="the directory to parse")
 args = parser.parse_args()
 
 folder: DatasetFolder = DatasetFolder(args.directory)
+# print(folder.mapped_dictionnary)
+# print(folder.count_dictionnary)
+# print(folder.indices_dictionnary)
 loader: Dataloader = Dataloader(folder, 1000)
-loader.get_tensor()
+X_train, Y_train = loader.get_tensor()
+# exit(0)
+X_test, Y_test = X_train, Y_train
 # print(folder[0])
-exit(0)
 # (60000, 1, 28, 28) dtypes.uchar (60000,) dtypes.uchar
 
-model = Model()
+model = Model(len(folder.classes))
 acc = (model(X_test).argmax(axis=1) == Y_test).mean()
 # NOTE: tinygrad is lazy, and hasn't actually run anything by this point
 print(acc.item())  # ~10% accuracy, as expected from a random model
