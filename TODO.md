@@ -21,6 +21,7 @@ inputs url, pathlib, subdir, gzip:Optional[method], return path with data
     <!--- What count as data transformation: Convolution/-->
 - train model
     - test cnn from tinygrad mnist example to train
+    - function in dataloader which returns the X_train, Y_train as tinygrad.Tensor
 - classify new inputs from data validation
 
 <!--- clean Utils-->

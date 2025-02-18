@@ -96,9 +96,9 @@ augmentation: augmented_directory
 	${PYTHON} Augmentation.py images
 
 transformation: debug_directory
-	${PYTHON} Transformation.py "images/Apple/Apple_healthy/image (9).JPG"
-	${PYTHON} Transformation.py -src images -dst debug
-	# This usage are incorect and throws error
+	${PYTHON} Transformation.py -src images/Apple_Black_rot -dst debug
+	# ${PYTHON} Transformation.py "images/Apple/Apple_healthy/image (9).JPG"
+	# These usages are incorrect and should throw error
 	# ${PYTHON} Transformation.py -src images -dst
 	# ${PYTHON} Transformation.py -src -dst debug
 	# ${PYTHON} Transformation.py -src images -dst debug "images/Apple/Apple_healthy/image (9).JPG"
@@ -106,6 +106,7 @@ transformation: debug_directory
 
 train:
 	${PYTHON} train.py images
+	# ${PYTHON} train.py balanced
 
 reaugmentation: clean extract augmentation
 
