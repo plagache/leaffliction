@@ -288,7 +288,7 @@ class Dataloader:
         labels_array = np.zeros(len(self.dataset))
         for label, indices in self.dataset.indices_dictionnary.items():
             np.put(labels_array, indices, self.dataset.mapped_dictionnary[label])
-        self.y_tensor = Tensor(labels_array)
-        self.x_tensor = Tensor(simple_array)
+        self.y_tensor = Tensor(labels_array, requires_grad=False)
+        self.x_tensor = Tensor(simple_array, requires_grad=False)
         self.x_tensor = self.x_tensor.reshape(-1, 3, 256, 256)
         return self.x_tensor, self.y_tensor, self.x_tensor[:10], self.y_tensor[:10]

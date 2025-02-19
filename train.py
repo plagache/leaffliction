@@ -37,7 +37,7 @@ folder: DatasetFolder = DatasetFolder(args.directory)
 # print(folder.indices_dictionnary)
 loader: Dataloader = Dataloader(folder, 1000)
 X_train, Y_train, X_test, Y_test = loader.get_tensor()
-print(X_test, Y_test)
+print(X_train, Y_train, X_test, Y_test)
 # print(folder[0])
 # (60000, 1, 28, 28) dtypes.uchar (60000,) dtypes.uchar
 
@@ -47,7 +47,8 @@ acc = (model(X_test).argmax(axis=1) == Y_test).mean()
 print(acc.item())  # ~10% accuracy, as expected from a random model
 
 optim = nn.optim.Adam(nn.state.get_parameters(model))
-batch_size = 128
+batch_size = 12
+# batch_size = 128
 
 
 def step():
