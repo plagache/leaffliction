@@ -31,7 +31,7 @@ class DatasetFolder:
         self.indices_dictionnary: dict[str, list[int]] = {}
         self.__find_classes(self.root)
         self.images: Optional[list] = None
-        self.numpy_arrays: Optional[list] = None
+        self.numpy_arrays: Optional[list[np.ndarray]] = None
         self.augmented_images = {}
         self.max_count = max(self.count_dictionnary.values())
 
@@ -291,4 +291,4 @@ class Dataloader:
         self.y_tensor = Tensor(labels_array)
         self.x_tensor = Tensor(simple_array)
         self.x_tensor = self.x_tensor.reshape(-1, 3, 256, 256)
-        return self.x_tensor, self.y_tensor
+        return self.x_tensor, self.y_tensor, self.x_tensor[:10], self.y_tensor[:10]

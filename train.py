@@ -15,10 +15,10 @@ from utils import DatasetFolder, Dataloader
 
 class Model:
     def __init__(self, num_classes):
-        self.l1 = nn.Conv2d(3, 64, kernel_size=(3, 3), padding=1)
-        self.l2 = nn.Conv2d(64, 128, kernel_size=(3, 3), padding=1)
-        self.l3 = nn.Conv2d(128, 256, kernel_size=(3, 3), padding=1)
-        self.l4 = nn.Linear(256 * 32 * 32, num_classes)
+        self.l1 = nn.Conv2d(3, 64, kernel_size=(3, 3))
+        self.l2 = nn.Conv2d(64, 128, kernel_size=(3, 3))
+        self.l3 = nn.Conv2d(128, 256, kernel_size=(3, 3))
+        self.l4 = nn.Linear(256 * 30 * 30, num_classes)
 
     def __call__(self, x: Tensor) -> Tensor:
         x = self.l1(x).relu().max_pool2d((2, 2))
@@ -36,9 +36,8 @@ folder: DatasetFolder = DatasetFolder(args.directory)
 # print(folder.count_dictionnary)
 # print(folder.indices_dictionnary)
 loader: Dataloader = Dataloader(folder, 1000)
-X_train, Y_train = loader.get_tensor()
-# exit(0)
-X_test, Y_test = X_train, Y_train
+X_train, Y_train, X_test, Y_test = loader.get_tensor()
+print(X_test, Y_test)
 # print(folder[0])
 # (60000, 1, 28, 28) dtypes.uchar (60000,) dtypes.uchar
 
@@ -52,6 +51,7 @@ batch_size = 128
 
 
 def step():
+    print("HERE")
     Tensor.training = True  # makes dropout work
     samples = Tensor.randint(batch_size, high=X_train.shape[0])
     X, Y = X_train[samples], Y_train[samples]

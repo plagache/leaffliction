@@ -22,6 +22,10 @@ inputs url, pathlib, subdir, gzip:Optional[method], return path with data
 - train model
     - test cnn from tinygrad mnist example to train
     - function in dataloader which returns the X_train, Y_train as tinygrad.Tensor
+    - reduce ndtype on tensor
+    - no grad on input tensor
+    - normalize input tensor (/255)
+    - modify batch size
 - classify new inputs from data validation
 
 <!--- clean Utils-->
