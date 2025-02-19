@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Union, Optional, Self
 from Augmentor.Operations import Flip, Rotate, Skew, Shear, CropRandom, Distort
 from tinygrad import Tensor
+from tinygrad.dtype import dtypes
 
 import numpy as np
 from PIL import Image
@@ -288,7 +289,7 @@ class Dataloader:
         labels_array = np.zeros(len(self.dataset))
         for label, indices in self.dataset.indices_dictionnary.items():
             np.put(labels_array, indices, self.dataset.mapped_dictionnary[label])
-        self.y_tensor = Tensor(labels_array, requires_grad=False)
-        self.x_tensor = Tensor(simple_array, requires_grad=False)
+        self.y_tensor = Tensor(labels_array, dtype=dtypes.float16, requires_grad=False)
+        self.x_tensor = Tensor(simple_array, dtype=dtypes.float16, requires_grad=False)
         self.x_tensor = self.x_tensor.reshape(-1, 3, 256, 256)
-        return self.x_tensor, self.y_tensor, self.x_tensor[:10], self.y_tensor[:10]
+        return self.x_tensor, self.y_tensor, self.x_tensor[:100], self.y_tensor[:100]
