@@ -24,20 +24,24 @@ class ModelBig:
         x = self.l1(x).relu().max_pool2d((2, 2))
         x = self.l2(x).relu().max_pool2d((2, 2))
         x = self.l3(x).relu().max_pool2d((2, 2))
-        return self.l4(x.flatten(1).dropout(0.5))
+        x = x.flatten(1).dropout(0.5)
+        # print(x.shape)
+        return self.l4(x)
 
 class ModelSmall:
     def __init__(self, num_classes):
         self.l1 = nn.Conv2d(3, 64, kernel_size=(3, 3), stride=2)
         self.l2 = nn.Conv2d(64, 128, kernel_size=(3, 3), stride=2)
-        self.l3 = nn.Conv2d(128, 256, kernel_size=(1, 1), stride=2)
-        self.l4 = nn.Linear(256, num_classes)
+        # self.l3 = nn.Conv2d(128, 256, kernel_size=(1, 1), stride=2)
+        self.l4 = nn.Linear(4608, num_classes)
 
     def __call__(self, x: Tensor) -> Tensor:
         x = self.l1(x).relu().max_pool2d((3, 3))
         x = self.l2(x).relu().max_pool2d((3, 3))
-        x = self.l3(x).relu().max_pool2d((3, 3))
-        return self.l4(x.flatten(1).dropout(0.5))
+        # x = self.l3(x).relu().max_pool2d((3, 3))
+        x = x.flatten(1).dropout(0.5)
+        # print(x.shape)
+        return self.l4(x)
 
 parser = argparse.ArgumentParser(description="analyse a dataset from a given directory")
 parser.add_argument("directory", help="the directory to parse")
@@ -82,6 +86,7 @@ with Context(DEBUG=2):
 
 jit_step = TinyJit(step)
 
+step = -1
 for step in range(300):
     loss = jit_step()
     if step % 100 == 0:
@@ -90,5 +95,6 @@ for step in range(300):
         if acc >= 0.9:
             break
         print(f"step {step:4d}, loss {loss.item():.2f}, acc {acc*100.:.2f}%")
+print(f"step {step:4d}, loss {loss.item():.2f}, acc {acc*100.:.2f}%")
 
 timeit.repeat(jit_step, repeat=5, number=1)

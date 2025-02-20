@@ -15,10 +15,13 @@ inputs url, pathlib, subdir, gzip:Optional[method], return path with data
 <!--            - (labels|classes) / path / elements / number of elements / batches-->
 <!--- augment data to balance dataset-->
 - create data validation / training batches
-- setup labels to detecte categories
+- sampling test and training on augmented dataset
+- setup labels to detect categories
+
 - transform dataset to detect features from categories
     - test pixel intensity to determine threshold
     <!--- What count as data transformation: Convolution/-->
+
 - train model
     - test cnn from tinygrad mnist example to train
     <!--- function in dataloader which returns the X_train, Y_train as tinygrad.Tensor-->
