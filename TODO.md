@@ -21,11 +21,12 @@ inputs url, pathlib, subdir, gzip:Optional[method], return path with data
     <!--- What count as data transformation: Convolution/-->
 - train model
     - test cnn from tinygrad mnist example to train
-    - function in dataloader which returns the X_train, Y_train as tinygrad.Tensor
-    - reduce ndtype on tensor
-    - no grad on input tensor
+    <!--- function in dataloader which returns the X_train, Y_train as tinygrad.Tensor-->
+    <!--- reduce ndtype on tensor-->
+    <!--- no grad on input tensor-->
     - normalize input tensor (/255)
-    - modify batch size
+    - simplify training by default (set debug / context / jit as optional with env variable)
+    <!--- modify batch size-->
 - classify new inputs from data validation
 
 <!--- clean Utils-->
