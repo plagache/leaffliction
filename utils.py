@@ -84,14 +84,7 @@ class DatasetFolder:
                         self.count_dictionnary[category] = len(files)
 
                         # iterate over files to find the index of "root/file" in the samples
-                        indices = []
-                        for file in files:
-                            try:
-                                index = self.samples.index(Path(f"{root}/{file}"))
-                                indices.append(index)
-                            except ValueError:
-                                print(f"{root}/{file} was not found in the samples this should never happened")
-                                exit(-1)
+                        indices = [index for index, path in enumerate(self.samples) if root in str(path)]
                         self.indices_dictionnary[category] = indices
                     category_index += 1
         return self.classes, self.mapped_dictionnary
