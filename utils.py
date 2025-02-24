@@ -7,9 +7,10 @@ from shutil import copy
 from pathlib import Path
 from typing import Union, Optional, Self
 from Augmentor.Operations import Flip, Rotate, Skew, Shear, CropRandom, Distort
-from tinygrad import Tensor
+from tinygrad import Tensor, Device
 from tinygrad.dtype import dtypes
 
+import time
 import numpy as np
 from PIL import Image
 
@@ -30,11 +31,16 @@ class DatasetFolder:
         self.count_dictionnary: dict[str, int] = {}
         self.root_dictionnary: dict[str, str] = {}
         self.indices_dictionnary: dict[str, list[int]] = {}
+        t0 = time.monotonic()
         self.__find_classes(self.root)
+        t1 = time.monotonic()
+        print(f"__find_classes timet: {t1 - t0}")
         self.images: Optional[list] = None
         self.numpy_arrays: Optional[list[np.ndarray]] = None
         self.augmented_images = {}
         self.max_count = max(self.count_dictionnary.values())
+        t2 = time.monotonic()
+        print(f"end of init: {t2 - t1}")
 
     def __find_classes(self, directory: Path) -> tuple(list(str), dict(str, int)):
         """Find the class folders in a dataset structured as follows::
@@ -289,7 +295,10 @@ class Dataloader:
         labels_array = np.zeros(len(self.dataset))
         for label, indices in self.dataset.indices_dictionnary.items():
             np.put(labels_array, indices, self.dataset.mapped_dictionnary[label])
-        self.y_tensor = Tensor(labels_array, dtype=dtypes.float16, requires_grad=False)
-        self.x_tensor = Tensor(simple_array, dtype=dtypes.float16, requires_grad=False)
+        self.y_tensor = Tensor(labels_array, requires_grad=False, dtype=dtypes.float16)
+        self.x_tensor = Tensor(simple_array, requires_grad=False)
         self.x_tensor = self.x_tensor.reshape(-1, 3, 256, 256)
-        return self.x_tensor, self.y_tensor, self.x_tensor[:100], self.y_tensor[:100]
+        del labels_array
+        del simple_array
+        # print(self.x_tensor[0].numpy())
+        return self.x_tensor, self.y_tensor, self.x_tensor[1050:1150], self.y_tensor[1050:1150]
