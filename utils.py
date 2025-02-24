@@ -83,7 +83,7 @@ class DatasetFolder:
                         self.root_dictionnary[category] = root
                         self.count_dictionnary[category] = len(files)
 
-                        # iterate over files to find the index of "root/file" in the samples
+                        # find all indices where root is in a sample
                         indices = [index for index, path in enumerate(self.samples) if root in str(path)]
                         self.indices_dictionnary[category] = indices
                     category_index += 1
