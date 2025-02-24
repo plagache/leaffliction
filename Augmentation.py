@@ -1,6 +1,6 @@
 import argparse
 from PIL import Image
-from Augmentor.Operations import Flip, Rotate, Skew, Shear, CropRandom, Distort
+from Augmentor.Operations import Flip, Rotate, Skew, Shear, CropRandom, Distort, Resize
 from pathlib import Path
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
@@ -13,7 +13,7 @@ def get_modified_images(image):
         "Flip": Flip(probability=1, top_bottom_left_right="RANDOM").perform_operation([image]),
         "Skew": Skew(probability=1, skew_type="TILT", magnitude=1).perform_operation([image]),
         "Shear": Shear(probability=1, max_shear_left=20, max_shear_right=20).perform_operation([image]),
-        "Crop": CropRandom(probability=1, percentage_area=0.8).perform_operation([image]),
+        "Crop": CropRandom(probability=1, percentage_area=0.8).Resize(probability=1, width=image.width, height=image.height, resample_filter="BICUBIC").perform_operation([image]),
         "Distortion": Distort(probability=1, grid_width=2, grid_height=2, magnitude=9).perform_operation([image]),
     }
     return modified_images.items()
