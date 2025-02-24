@@ -104,6 +104,9 @@ transformation: debug_directory
 	# ${PYTHON} Transformation.py -src images -dst debug "images/Apple/Apple_healthy/image (9).JPG"
 	# ${PYTHON} Transformation.py debug "images/Apple/Apple_healthy/image (9).JPG"
 
+sample:
+	${PYTHON} sample.py augmented_directory
+
 train:
 	${PYTHON} train.py images
 	# ${PYTHON} train.py balanced
