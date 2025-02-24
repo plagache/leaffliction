@@ -1,18 +1,19 @@
 from __future__ import annotations
 
-from os import strerror
 import errno
+import time
+from os import strerror
+from pathlib import Path
 from random import sample, shuffle
 from shutil import copy
-from pathlib import Path
-from typing import Union, Optional, Self
-from Augmentor.Operations import Flip, Rotate, Skew, Shear, CropRandom, Distort
-from tinygrad import Tensor, Device
-from tinygrad.dtype import dtypes
+from typing import Optional, Self, Union
 
-import time
+import cv2
 import numpy as np
+from Augmentor.Operations import CropRandom, Distort, Flip, Rotate, Shear, Skew
 from PIL import Image
+from tinygrad import Device, Tensor
+from tinygrad.dtype import dtypes
 
 
 class DatasetFolder:
@@ -31,16 +32,14 @@ class DatasetFolder:
         self.count_dictionnary: dict[str, int] = {}
         self.root_dictionnary: dict[str, str] = {}
         self.indices_dictionnary: dict[str, list[int]] = {}
-        t0 = time.monotonic()
+        # t0 = time.monotonic()
         self.__find_classes(self.root)
-        t1 = time.monotonic()
-        print(f"__find_classes timet: {t1 - t0}")
+        # t1 = time.monotonic()
+        # print(f"__find_classes timet: {t1 - t0}")
         self.images: Optional[list] = None
         self.numpy_arrays: Optional[list[np.ndarray]] = None
         self.augmented_images = {}
         self.max_count = max(self.count_dictionnary.values())
-        t2 = time.monotonic()
-        print(f"end of init: {t2 - t1}")
 
     def __find_classes(self, directory: Path) -> tuple(list(str), dict(str, int)):
         """Find the class folders in a dataset structured as follows::
@@ -176,20 +175,27 @@ class DatasetFolder:
         return self
 
     def to_numpy(self) -> Self:
-        if self.images is None:
-            self.to_images()
         if self.numpy_arrays is None:
-            self.numpy_arrays = np.asarray(self.images)
+            self.numpy_arrays = []
+            t0 = time.monotonic()
+            for path in self.samples:
+                image_array = cv2.imread(str(path))
+                self.numpy_arrays.append(image_array)
+            t1 = time.monotonic()
+            print(f"create numpy list: {t1 - t0}")
         self.items = self.numpy_arrays
         return self
 
     def to_images(self) -> Self:
         if self.images is None:
             self.images = []
+            # t0 = time.monotonic()
             for path in self.samples:
                 image = Image.open(path).copy()
                 # image = image.load()
                 self.images.append(image)
+            # t1 = time.monotonic()
+            # print(f"create image list: {t1 - t0}")
         # self.images = Image.open(self.samples)
         self.items = self.images
         return self
@@ -283,6 +289,7 @@ class Dataloader:
         if self.dataset.numpy_arrays is None:
             self.dataset.to_numpy()
 
+        # t0 = time.monotonic()
         simple_array = np.concatenate(self.dataset.numpy_arrays)
 
         labels_array = np.zeros(len(self.dataset))
@@ -293,5 +300,7 @@ class Dataloader:
         self.x_tensor = self.x_tensor.reshape(-1, 3, 256, 256)
         del labels_array
         del simple_array
+        # t1 = time.monotonic()
+        # print(f"create tensor: {t1 - t0}")
         # print(self.x_tensor[0].numpy())
         return self.x_tensor, self.y_tensor, self.x_tensor[1050:1150], self.y_tensor[1050:1150]
