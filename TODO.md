@@ -14,7 +14,7 @@ inputs url, pathlib, subdir, gzip:Optional[method], return path with data
 <!--        - load data in class-->
 <!--            - (labels|classes) / path / elements / number of elements / batches-->
 <!--- augment data to balance dataset-->
-- add resize after crop to keep all images size
+<!--- add resize after crop to keep all images size-->
 - create data validation / training batches
 - sampling test and training on augmented dataset
 - setup labels to detect categories
