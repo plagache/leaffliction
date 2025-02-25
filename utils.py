@@ -10,7 +10,7 @@ from typing import Optional, Self, Union
 
 import cv2
 import numpy as np
-from Augmentor.Operations import CropRandom, Distort, Flip, Rotate, Shear, Skew
+from Augmentor.Operations import CropRandom, Distort, Flip, Resize, Rotate, Shear, Skew
 from PIL import Image
 from tinygrad import Device, Tensor
 from tinygrad.dtype import dtypes
@@ -100,19 +100,25 @@ class DatasetFolder:
         samples = [sample for sample in files if Path.is_file(sample) is True]
         return samples
 
-    def __get_modified_images(self, image):
+    @classmethod
+    def get_modified_images(cls, image):
+        cropped_image = CropRandom(probability=1, percentage_area=0.8).perform_operation([image])[0]
         modified_images = {
-            "Rotate": Rotate(probability=1, rotation=90).perform_operation([image]),
-            "Flip": Flip(probability=1, top_bottom_left_right="RANDOM").perform_operation([image]),
-            "Skew": Skew(probability=1, skew_type="TILT", magnitude=1).perform_operation([image]),
-            "Shear": Shear(probability=1, max_shear_left=20, max_shear_right=20).perform_operation([image]),
-            # "Crop": CropRandom(probability=1, percentage_area=0.8).perform_operation([image]),
-            "Distortion": Distort(probability=1, grid_width=2, grid_height=2, magnitude=9).perform_operation([image]),
+            "Rotate": Rotate(probability=1, rotation=90).perform_operation([image])[0],
+            "Flip": Flip(probability=1, top_bottom_left_right="RANDOM").perform_operation([image])[0],
+            "Skew": Skew(probability=1, skew_type="TILT", magnitude=1).perform_operation([image])[0],
+            "Shear": Shear(probability=1, max_shear_left=20, max_shear_right=20).perform_operation([image])[0],
+            "Crop": Resize(probability=1, width=image.width, height=image.height, resample_filter="BICUBIC").perform_operation([cropped_image])[0],
+            "Distortion": Distort(probability=1, grid_width=2, grid_height=2, magnitude=9).perform_operation([image])[0],
         }
         return modified_images.items()
 
-    def __get_modified_image_name(self, modification: str, image_path) -> str:
-        split_image_name = str(image_path).split(".")
+    @classmethod
+    def get_modified_image_name(cls, modification: str, image_path: str | Path) -> str:
+        source = image_path
+        if isinstance(image_path, Path):
+            source = str(image_path)
+        split_image_name = str(source).split(".")
         split_image_name[0] = f"{split_image_name[0]}_{modification}"
         return ".".join(split_image_name)
 
@@ -128,10 +134,10 @@ class DatasetFolder:
                 file_pathname = self.samples[index]
                 image = self.images[index]
 
-                for modification, images in self.__get_modified_images(image):
-                    output_path = self.__get_modified_image_name(modification, file_pathname)
+                for modification, modified_image in self.get_modified_images(image):
+                    output_path = self.get_modified_image_name(modification, file_pathname)
                     augmented_images.append(output_path)
-                    images[0].save(output_path)
+                    modified_image.save(output_path)
             self.augmented_images[name] = augmented_images
         return self
 

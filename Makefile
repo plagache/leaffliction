@@ -90,8 +90,8 @@ distribution:
 	# ${PYTHON} Distribution.py images/Grape
 
 augmentation: augmented_directory
-	# ${PYTHON} Augmentation.py "images/Apple/Apple_healthy/image (9).JPG"
-	# ${PYTHON} Augmentation.py images/Apple/Apple_healthy
+	# ${PYTHON} Augmentation.py "images/Apple_healthy/image (9).JPG"
+	# ${PYTHON} Augmentation.py images/Apple_healthy
 	# ${PYTHON} Augmentation.py images/Apple
 	${PYTHON} Augmentation.py images
 

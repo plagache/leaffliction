@@ -1,40 +1,24 @@
 import argparse
-from PIL import Image
-from Augmentor.Operations import Flip, Rotate, Skew, Shear, CropRandom, Distort, Resize
 from pathlib import Path
-import matplotlib.pyplot as plt
+
 import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
+from PIL import Image
+
 from utils import DatasetFolder
 
-
-def get_modified_images(image):
-    modified_images = {
-        "Rotate": Rotate(probability=1, rotation=90).perform_operation([image]),
-        "Flip": Flip(probability=1, top_bottom_left_right="RANDOM").perform_operation([image]),
-        "Skew": Skew(probability=1, skew_type="TILT", magnitude=1).perform_operation([image]),
-        "Shear": Shear(probability=1, max_shear_left=20, max_shear_right=20).perform_operation([image]),
-        # "Crop": CropRandom(probability=1, percentage_area=0.8).Resize(probability=1, width=image.width, height=image.height, resample_filter="BICUBIC").perform_operation([image]),
-        "Distortion": Distort(probability=1, grid_width=2, grid_height=2, magnitude=9).perform_operation([image]),
-    }
-    return modified_images.items()
 
 def modify_image(image_path, images_to_show):
     image = Image.open(image_path)
     images_to_show.append(("original", image_path))
-    for modification, images in get_modified_images(image):
-        output_path = get_modified_image_name(modification, image_path)
+    for modification, modified_image in DatasetFolder.get_modified_images(image):
+        output_path = DatasetFolder.get_modified_image_name(modification, image_path)
         images_to_show.append((modification, output_path))
-        images[0].save(output_path)
-
-
-def get_modified_image_name(modification: str, image_path: str) -> str:
-    split_image_name = image_path.split(".")
-    split_image_name[0] = f"{split_image_name[0]}_{modification}"
-    return ".".join(split_image_name)
+        modified_image.save(output_path)
 
 
 def display_images(images_with_titles: tuple[str, str]):
-    plt.style.use('dark_background')
+    plt.style.use("dark_background")
     rows = 1
     cols = len(images_with_titles)
     fig, axes = plt.subplots(rows, cols, figsize=(19.2, 10.8))
@@ -77,7 +61,7 @@ if __name__ == "__main__":
         dataset.balance_dataset(output_directory)
         exit(0)
     else:
-        pass
+        raise ValueError("The given path was neither a file nor a directory")
         # Exception path error
 
     ###################
