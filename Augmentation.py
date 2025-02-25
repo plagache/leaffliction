@@ -5,14 +5,14 @@ import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 from PIL import Image
 
-from utils import DatasetFolder
+from utils import DatasetFolder, get_modified_image_name, get_modified_images
 
 
 def modify_image(image_path, images_to_show):
     image = Image.open(image_path)
     images_to_show.append(("original", image_path))
-    for modification, modified_image in DatasetFolder.get_modified_images(image):
-        output_path = DatasetFolder.get_modified_image_name(modification, image_path)
+    for modification, modified_image in get_modified_images(image):
+        output_path = get_modified_image_name(modification, image_path)
         images_to_show.append((modification, output_path))
         modified_image.save(output_path)
 

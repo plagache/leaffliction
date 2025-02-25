@@ -16,6 +16,28 @@ from tinygrad import Device, Tensor
 from tinygrad.dtype import dtypes
 
 
+def get_modified_images(image):
+    cropped_image = CropRandom(probability=1, percentage_area=0.8).perform_operation([image])[0]
+    modified_images = {
+        "Rotate": Rotate(probability=1, rotation=90).perform_operation([image])[0],
+        "Flip": Flip(probability=1, top_bottom_left_right="RANDOM").perform_operation([image])[0],
+        "Skew": Skew(probability=1, skew_type="TILT", magnitude=1).perform_operation([image])[0],
+        "Shear": Shear(probability=1, max_shear_left=20, max_shear_right=20).perform_operation([image])[0],
+        "Crop": Resize(probability=1, width=image.width, height=image.height, resample_filter="BICUBIC").perform_operation([cropped_image])[0],
+        "Distortion": Distort(probability=1, grid_width=2, grid_height=2, magnitude=9).perform_operation([image])[0],
+    }
+    return modified_images.items()
+
+
+def get_modified_image_name(modification: str, image_path: str | Path) -> str:
+    source = image_path
+    if isinstance(image_path, Path):
+        source = str(image_path)
+    split_image_name = str(source).split(".")
+    split_image_name[0] = f"{split_image_name[0]}_{modification}"
+    return ".".join(split_image_name)
+
+
 class DatasetFolder:
     def __init__(self, root: Union[str, Path]):
         if isinstance(root, Path):
@@ -30,7 +52,6 @@ class DatasetFolder:
         self.classes: Optional[list[str]] = None
         self.mapped_dictionnary: Optional[dict[str, int]] = None
         self.count_dictionnary: dict[str, int] = {}
-        self.root_dictionnary: dict[str, str] = {}
         self.indices_dictionnary: dict[str, list[int]] = {}
         # t0 = time.monotonic()
         self.__find_classes(self.root)
@@ -79,7 +100,6 @@ class DatasetFolder:
                     self.classes.append(category)
                     if len(dirs) == 0:
                         self.mapped_dictionnary[category] = category_index
-                        self.root_dictionnary[category] = root
                         self.count_dictionnary[category] = len(files)
 
                         # find all indices where root is in a sample
@@ -100,28 +120,6 @@ class DatasetFolder:
         samples = [sample for sample in files if Path.is_file(sample) is True]
         return samples
 
-    @classmethod
-    def get_modified_images(cls, image):
-        cropped_image = CropRandom(probability=1, percentage_area=0.8).perform_operation([image])[0]
-        modified_images = {
-            "Rotate": Rotate(probability=1, rotation=90).perform_operation([image])[0],
-            "Flip": Flip(probability=1, top_bottom_left_right="RANDOM").perform_operation([image])[0],
-            "Skew": Skew(probability=1, skew_type="TILT", magnitude=1).perform_operation([image])[0],
-            "Shear": Shear(probability=1, max_shear_left=20, max_shear_right=20).perform_operation([image])[0],
-            "Crop": Resize(probability=1, width=image.width, height=image.height, resample_filter="BICUBIC").perform_operation([cropped_image])[0],
-            "Distortion": Distort(probability=1, grid_width=2, grid_height=2, magnitude=9).perform_operation([image])[0],
-        }
-        return modified_images.items()
-
-    @classmethod
-    def get_modified_image_name(cls, modification: str, image_path: str | Path) -> str:
-        source = image_path
-        if isinstance(image_path, Path):
-            source = str(image_path)
-        split_image_name = str(source).split(".")
-        split_image_name[0] = f"{split_image_name[0]}_{modification}"
-        return ".".join(split_image_name)
-
     def augment_images(self) -> Self:
         """
         Augment all images found
@@ -134,8 +132,8 @@ class DatasetFolder:
                 file_pathname = self.samples[index]
                 image = self.images[index]
 
-                for modification, modified_image in self.get_modified_images(image):
-                    output_path = self.get_modified_image_name(modification, file_pathname)
+                for modification, modified_image in get_modified_images(image):
+                    output_path = get_modified_image_name(modification, file_pathname)
                     augmented_images.append(output_path)
                     modified_image.save(output_path)
             self.augmented_images[name] = augmented_images
@@ -160,7 +158,7 @@ class DatasetFolder:
         # Create output directories (only relevant for balancing dataset)
         for category_name in self.classes:
             print(f"balancing category: {category_name}")
-            new_path: str = f"{output_directory}/{self.root_dictionnary[category_name]}"
+            new_path: str = f"{output_directory}/{category_name}"
             Path(new_path).mkdir(parents=True, exist_ok=True)
 
             # 1 - copy all original images in new_path
