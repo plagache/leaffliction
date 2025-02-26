@@ -8,16 +8,16 @@ from PIL import Image
 from utils import DatasetFolder, get_modified_image_name, get_modified_images
 
 
-def modify_image(image_path, images_to_show):
+def modify_image(image_path: Path, images_to_show: list) -> None:
     image = Image.open(image_path)
     images_to_show.append(("original", image_path))
     for modification, modified_image in get_modified_images(image):
-        output_path = get_modified_image_name(modification, image_path)
+        output_path: str = get_modified_image_name(modification, image_path)
         images_to_show.append((modification, output_path))
         modified_image.save(output_path)
 
 
-def display_images(images_with_titles: tuple[str, str]):
+def display_images(images_with_titles: tuple[str, str]) -> None:
     plt.style.use("dark_background")
     rows = 1
     cols = len(images_with_titles)
@@ -42,15 +42,15 @@ if __name__ == "__main__":
     parser.add_argument("path", help="the file(s) to augment")
     args = parser.parse_args()
 
-    print("augmenting in", args.path)
 
     output_directory = "augmented_directory"
 
     given_path = Path(args.path)
+    print(f"augmenting {given_path}")
 
     if given_path.is_file():
         images_to_show: list[tuple[str, str]] = []
-        modify_image(args.path, images_to_show)
+        modify_image(given_path, images_to_show)
         display_images(images_to_show)
         exit(0)
 

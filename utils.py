@@ -16,7 +16,7 @@ from tinygrad import Device, Tensor
 from tinygrad.dtype import dtypes
 
 
-def get_modified_images(image):
+def get_modified_images(image: Image) -> dict[str, Image]:
     cropped_image = CropRandom(probability=1, percentage_area=0.8).perform_operation([image])[0]
     modified_images = {
         "Rotate": Rotate(probability=1, rotation=90).perform_operation([image])[0],
@@ -29,7 +29,7 @@ def get_modified_images(image):
     return modified_images.items()
 
 
-def get_modified_image_name(modification: str, image_path: str | Path) -> str:
+def get_modified_image_name(modification: str, image_path: Path) -> str:
     source = image_path
     if isinstance(image_path, Path):
         source = str(image_path)
@@ -46,7 +46,7 @@ class DatasetFolder:
             self.root = Path(root)
         if self.root.is_dir() is False:
             raise FileNotFoundError(errno.ENOENT, strerror(errno.ENOENT), root)
-        self.samples: list(Path) = self.make_dataset(self.root)
+        self.samples: list[Path] = self.make_dataset(self.root)
         self.items: list = self.samples
 
         self.classes: Optional[list[str]] = None
@@ -57,12 +57,12 @@ class DatasetFolder:
         self.__find_classes(self.root)
         # t1 = time.monotonic()
         # print(f"__find_classes timet: {t1 - t0}")
-        self.images: Optional[list] = None
+        self.images: Optional[list[Image]] = None
         self.numpy_arrays: Optional[list[np.ndarray]] = None
         self.augmented_images = {}
         self.max_count = max(self.count_dictionnary.values())
 
-    def __find_classes(self, directory: Path) -> tuple(list(str), dict(str, int)):
+    def __find_classes(self, directory: Path) -> tuple[list[str], dict[str, int]]:
         """Find the class folders in a dataset structured as follows::
 
             directory/
@@ -92,10 +92,10 @@ class DatasetFolder:
         if self.classes is None or self.mapped_dictionnary is None:
             self.classes = []
             self.mapped_dictionnary = {}
-            category_index = 0
+            category_index: int = 0
             for root, dirs, files in directory.walk(top_down=False):
-                root = str(root)
-                category = root if len(root.split("/")) < 1 else root.split("/")[-1]
+                root: str = str(root)
+                category: str = root if len(root.split("/")) < 1 else root.split("/")[-1]
                 if len(files) != 0:
                     self.classes.append(category)
                     if len(dirs) == 0:
@@ -103,12 +103,12 @@ class DatasetFolder:
                         self.count_dictionnary[category] = len(files)
 
                         # find all indices where root is in a sample
-                        indices = [index for index, path in enumerate(self.samples) if root in str(path)]
+                        indices: list[int] = [index for index, path in enumerate(self.samples) if root in str(path)]
                         self.indices_dictionnary[category] = indices
                     category_index += 1
         return self.classes, self.mapped_dictionnary
 
-    def make_dataset(self, directory: Path) -> list(Path):
+    def make_dataset(self, directory: Path) -> list[Path]:
         """
         Inputs:
             directory(str): Root directory path, corresponding to ``self.root``
@@ -116,8 +116,8 @@ class DatasetFolder:
             samples: (list) of sample
         """
         pattern = "*"
-        files = list(directory.rglob(pattern))
-        samples = [sample for sample in files if Path.is_file(sample) is True]
+        files: list[Path] = list(directory.rglob(pattern))
+        samples: list[Path] = [sample for sample in files if Path.is_file(sample) is True]
         return samples
 
     def augment_images(self) -> Self:
@@ -129,8 +129,8 @@ class DatasetFolder:
 
             augmented_images = []
             for index in indices:
-                file_pathname = self.samples[index]
-                image = self.images[index]
+                file_pathname: Path = self.samples[index]
+                image: Image = self.images[index]
 
                 for modification, modified_image in get_modified_images(image):
                     output_path = get_modified_image_name(modification, file_pathname)
@@ -204,7 +204,7 @@ class DatasetFolder:
         self.items = self.images
         return self
 
-    def __getitem__(self, index: int | slice) -> tuple | list(tuple):
+    def __getitem__(self, index: int | slice) -> tuple | list[tuple]:
         """
         Inputs:
             index: int
@@ -223,7 +223,7 @@ class DatasetFolder:
         if step is None:
             step = 1
 
-        elements: list(tuple) = []
+        elements: list[tuple] = []
         for index in range(start, stop, step):
             class_index = None
             for key, value in self.mapped_dictionnary.items():
@@ -251,11 +251,11 @@ class Dataloader:
         self.dataset: DatasetFolder = dataset
         self.batch_size: int = batch_size
         self.shuffle: bool = shuffle
-        self.indices: list(int) = list(range(len(self.dataset)))
+        self.indices: list[int] = list(range(len(self.dataset)))
         self.x_tensor: Tensor = None
 
     def _reset_indices(self):
-        self.indices: list(int) = list(range(len(self.dataset)))
+        self.indices: list[int] = list(range(len(self.dataset)))
         return self
 
     def __iter__(self) -> tuple:
