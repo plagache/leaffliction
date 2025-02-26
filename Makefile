@@ -53,8 +53,6 @@ extract: download
 debug_directory:
 	mkdir -p debug
 
-augmented_directory:
-	mkdir -p augmented_directory
 
 #------------------------------------------------#
 #   INFO                                         #
@@ -89,7 +87,7 @@ distribution:
 	# ${PYTHON} Distribution.py images/Apple
 	# ${PYTHON} Distribution.py images/Grape
 
-augmentation: augmented_directory
+augmentation:
 	# ${PYTHON} Augmentation.py "images/Apple_healthy/image (9).JPG"
 	# ${PYTHON} Augmentation.py images/Apple_healthy
 	# ${PYTHON} Augmentation.py images/Apple
@@ -120,6 +118,8 @@ clean:
 	rm -rf debug*
 	rm -rf augmented*
 	rm -rf images*
+	rm -rf train/
+	rm -rf validation
 
 fclean: clean
 	rm -rf ${VENV}
