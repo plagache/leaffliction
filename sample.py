@@ -6,19 +6,27 @@ from pathlib import Path
 
 
 def copy_dataset(dataset: DatasetFolder, indices: list, output_directory: str):
-    for category_name in dataset.classes:
-        new_path: str = f"{output_directory}/{category_name}"
-        Path(new_path).mkdir(parents=True, exist_ok=True)
+    paths: dict[str, Path] = {}
 
-    for indice in indices:
-        old_path, index = dataset[indice]
-        for key, value in dataset.mapped_dictionnary.items():
-            if index == value:
-                category_name = key
-        # category_name = next(key for key, value in dataset.mapped_dictionnary.items() if index == value)
-        # print(category_name, index)
-        new_path: str = f"{output_directory}/{category_name}"
-        copy(old_path, new_path)
+    for index in indices:
+        file, category_index = dataset[index]
+
+        for class_name, class_index in dataset.mapped_dictionnary.items():
+            if category_index == class_index:
+                category_name = class_name
+
+        if category_name in paths:
+            destination = paths[category_name]
+        else:
+            destination: Path = Path(f"{output_directory}/{category_name}")
+
+            if destination.exists() is True:
+                raise FileExistsError(f"The directory [{destination}] already exist")
+
+            paths[category_name] = destination
+            destination.mkdir(parents=True, exist_ok=True)
+
+        copy(file, destination)
     return
 
 
