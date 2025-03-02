@@ -1,63 +1,106 @@
-# TODO
-download only if nescessary / not exist
-inputs url, pathlib, subdir, gzip:Optional[method], return path with data
+# TODO: Leaffliction
 
-# Plan
+## Project Goals
 
-- get data
-<!--- add shuffle to dataloader-->
-- add show batch
-- show one item of each category
-<!--    - check data integrety-->
-<!--    - normalization / resize-->
-<!--    - distribution-->
-<!--        - load data in class-->
-<!--            - (labels|classes) / path / elements / number of elements / batches-->
-<!--- augment data to balance dataset-->
-<!--- add resize after crop to keep all images size-->
-- create data validation / training batches
-- sampling test and training on augmented dataset
-- setup labels to detect categories
+- Implement an image classification system
+- Handle data preprocessing, augmentation, and model training
+- Testing the tinygrad framework on an old laptop for efficient neural network training
+    - Monitor training time, memory usage, and GPU utilization during the process.
+    - Gradually increase the complexity of our models to determine the limitations of our hardware.
+    - Understand the fusion kernel techniques that can optimize computation
 
-- transform dataset to detect features from categories
-    - test pixel intensity to determine threshold
-    <!--- What count as data transformation: Convolution/-->
 
-- train model
-    - test cnn from tinygrad mnist example to train
-    <!--- function in dataloader which returns the X_train, Y_train as tinygrad.Tensor-->
-    <!--- reduce ndtype on tensor-->
-    <!--- no grad on input tensor-->
-    - normalize input tensor (/255)
-    - simplify training by default (set debug / context / jit as optional with env variable)
-    <!--- modify batch size-->
-- classify new inputs from data validation
+## Core Tasks
 
-<!--- clean Utils-->
+### Data Preparation
 
-- Test
-    - Test distribution with different structure of directories
-- transformation
-    - usage with argparse handle single file and directory
+- [x] Download data only if necessary / not existing
+- [x] Implement `DatasetFolder` class:
+    - [x] Find and store class names (directory names).
+- [x] Implement `DatasetLoader` class:
+    - [x] Add shuffle to dataloader
+    - [ ] Implement show_batch functionality
+- [ ] Display one item from each category
+- [x] Analyze data distribution
 
-# Question
+### Data Augmentation
 
-what type of augmentation is interesting ?
-it should modify our data, but not create things that nature cannot produce
-a tree can be rotate left to right, but the leaf cannot be on the soil for example
+- [x] Implement data augmentation techniques:
+    - [x] Rotate (90 degrees).
+    - [x] Flip (randomly).
+    - [x] Skew.
+    - [x] Shear.
+    - [x] Crop (random).
+        - [x] Add resize after crop to maintain consistent image sizes
+    - [x] Distortion.
+- [x] Balance dataset
+- [x] Copy Balanced dataset
+- [x] Implement sampling for test and training on augmented dataset
 
-Datasets class implements how to get an items and the number of items in the Datasets
-DatasetFolders subclass implements how to get items and categories base on folders structures
+### Data Transformation
 
-DataLoaders class takes a Datasets class as parameters and 
+- [ ] Transform dataset to detect features from categories
+    - [x] Gaussian Blur.
+    - [x] Apply Otsu thresholding to grayscale image.
+        - algorithm that automatically determines an optimal threshold value to separate an image into two classes
+    - [x] Fill holes in binary image.
+    - [x] Apply circular ROI to isolate leaf.
+    - [ ] Test pixel intensity to determine threshold
+- [ ] Implement transformation usage with argparse (handle single file and directory)
 
-testing valid inputs
 
-transform is a function of Datasets
+### Model Training
 
-dataloaders:
-get_images=path_to_images where to get inputs
-get_y=parents_labels is fetch from the directory name
-function to create data validation set randomly
-path to data
-type of outputs data / models that is going to process this
+- [x] Adapt CNN from tinygrad MNIST example for training
+    - [x] adapte batch size
+    - [x] adapte Model deepness for our required precision
+- [x] Implement function in dataloader to return X_train, Y_train as tinygrad.Tensor
+- [ ] Normalize input tensor (/255)
+- [ ] Simplify training process (optional debug/context/jit with env variable)
+- [ ] Visualize kernel search
+- [ ] Train model on prepared data
+
+
+### Classification
+
+- [ ] Implement classification for new inputs from validation data
+
+
+### Testing & Validation
+
+- [ ] Test distribution with different directory structures
+- [ ] Validate data integrity
+- [ ] Check normalization / resize effects
+
+
+## Ideas & Questions
+
+### Data Augmentation
+
+Q: What type of augmentation is interesting and natural?
+A: Consider augmentations that mimic natural variations:
+
+- Horizontal flips (for most natural objects)
+- Slight rotations (within reasonable angles)
+- Color jittering (to account for lighting variations)
+- Random crops (to focus on different parts of the object)
+- Avoid unrealistic transformations (e.g., vertical flips for most natural scenes)
+
+
+### Architecture Considerations
+
+- Datasets class: Implements item retrieval and counting
+- DatasetFolders subclass: Implements item and category retrieval based on folder structure
+- DataLoaders class: Takes Datasets class as parameter
+- Transform: Function of Datasets
+
+
+### Implementation Details
+
+- Test valid inputs thoroughly
+- DataLoaders:
+    - get_images: Path to input images
+    - get_y: Fetch labels from directory names
+    - Implement function to create random validation set
+    - Define path to data
+    - Specify output data type / models for processing
