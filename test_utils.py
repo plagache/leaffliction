@@ -16,6 +16,24 @@ class TestDatasetFolder(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             DatasetFolder("this is not a root")
 
+    def test_same_name_directory(self):
+        """
+            Where do we raise the error of category with the same name, but path is different
+
+            directory/
+            ├── class_x
+            │   ├── x_sample_1.jpg
+            │   ├── x_sample_2.jpg
+            │   └── sub_class_x
+            │       └── sub_class_x_sample_1.jpg
+            └── class_y
+                ├── y_sample_2.jpg
+                ├── y_sample_2.jpg
+                └── class_x
+                    └── other.jpg
+        """
+        return
+
 class TestDataLoader(unittest.TestCase):
 
     @classmethod
