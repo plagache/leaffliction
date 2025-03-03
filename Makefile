@@ -102,12 +102,11 @@ transformation: debug_directory
 	# ${PYTHON} Transformation.py -src images -dst debug "images/Apple/Apple_healthy/image (9).JPG"
 	# ${PYTHON} Transformation.py debug "images/Apple/Apple_healthy/image (9).JPG"
 
-sample:
+sample: augmentation
 	${PYTHON} sample.py augmented_directory
 
 train:
-	${PYTHON} train.py images
-	# ${PYTHON} train.py balanced
+	${PYTHON} train.py train validation
 
 reaugmentation: clean extract augmentation
 
@@ -119,7 +118,7 @@ clean:
 	rm -rf augmented*
 	rm -rf images*
 	rm -rf train/
-	rm -rf validation
+	rm -rf validation/
 
 fclean: clean
 	rm -rf ${VENV}
@@ -133,4 +132,4 @@ re: fclean setup run
 #   SPEC                                         #
 #------------------------------------------------#
 .SILENT:
-.PHONY: setup venv uv_upgrade pip_upgrade install module requirements list version size run clean fclean re download
+.PHONY: setup venv uv_upgrade pip_upgrade install module requirements list version size run clean fclean re download train

@@ -299,12 +299,12 @@ class Dataloader:
         labels_array = np.zeros(len(self.dataset))
         for label, indices in self.dataset.indices_dictionnary.items():
             np.put(labels_array, indices, self.dataset.mapped_dictionnary[label])
-        self.y_tensor = Tensor(labels_array, requires_grad=False, dtype=dtypes.float16)
-        self.x_tensor = Tensor(simple_array, requires_grad=False)
+        self.y_tensor = Tensor(labels_array, requires_grad=False, dtype=dtypes.uchar)
+        self.x_tensor = Tensor(simple_array, requires_grad=False, dtype=dtypes.uchar)
         self.x_tensor = self.x_tensor.reshape(-1, 3, 256, 256)
         del labels_array
         del simple_array
         # t1 = time.monotonic()
         # print(f"create tensor: {t1 - t0}")
         # print(self.x_tensor[0].numpy())
-        return self.x_tensor, self.y_tensor, self.x_tensor[1050:1150], self.y_tensor[1050:1150]
+        return self.x_tensor, self.y_tensor

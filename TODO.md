@@ -52,8 +52,9 @@
 ### Model Training
 
 - [x] Adapt CNN from tinygrad MNIST example for training
-    - [x] adapte batch size
-    - [x] adapte Model deepness for our required precision
+    - [x] adapt Training and Validation with new directory/dataset
+    - [ ] adapt batch size
+    - [ ] adapt Model deepness for our required precision
 - [x] Implement function in dataloader to return X_train, Y_train as tinygrad.Tensor
 - [ ] Normalize input tensor (/255)
 - [ ] Simplify training process (optional debug/context/jit with env variable)
