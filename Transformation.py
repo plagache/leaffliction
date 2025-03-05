@@ -69,22 +69,21 @@ if __name__ == "__main__":
     parser.add_argument("filename", help="a single filename to transform", nargs="?", default=None)
     args = parser.parse_args()
 
-    print(f"found argument {args}")
 
     if args.filename and not (args.src or args.dst):
         print(f"Processing file: {args.filename}")
+        pcv.params.debug = "plot"
     elif args.src and args.dst and not args.filename:
         print(f"Reading from source: {args.src} and write to destination: {args.dst}")
+        pcv.params.debug = "print"
+        pcv.params.debug_outdir = f"{args.dst}"
     else:
         parser.error("You must provide either a filename or both -src and -dst options.")
         parser.print_help()
 
     dataset = DatasetFolder(args.src)
 
-    dataloader = Dataloader(dataset, batch_size=3, shuffle=True)
-    # print(dataloader.indices)
-    # Add the plotting of all transformation with plantcv
-    pcv.params.debug = "plot"
+    dataloader = Dataloader(dataset, batch_size=1, shuffle=True)
 
     # THIS WILL BE A TEST CASE IN TEST_UTILS.PY
     # one_batch = next(iter(dataloader))

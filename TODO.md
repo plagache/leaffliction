@@ -46,7 +46,8 @@
     - [x] Fill holes in binary image.
     - [x] Apply circular ROI to isolate leaf.
     - [ ] Test pixel intensity to determine threshold
-- [ ] Implement transformation usage with argparse (handle single file and directory)
+- [x] Implement transformation usage with argparse (handle single file and directory)
+    - [ ] when given source and destination directory move image from debug_outdir to destination and rename file accordigly
 
 
 ### Model Training

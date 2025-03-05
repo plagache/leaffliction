@@ -5,6 +5,7 @@ from tinygrad import Context, Device, GlobalCounters, Tensor, TinyJit, nn
 from tinygrad.nn.datasets import mnist
 
 from utils import DatasetFolder, Dataloader
+import numpy as np
 
 # watch -n0.1 nvidia-smi
 
@@ -12,7 +13,7 @@ from utils import DatasetFolder, Dataloader
 
 print(Device.DEFAULT)
 
-class Model:
+class BigModel:
     def __init__(self, num_classes):
         self.l1 = nn.Conv2d(3, 64, kernel_size=(3, 3), stride=1)
         self.l2 = nn.Conv2d(64, 128, kernel_size=(3, 3), stride=1)
@@ -27,16 +28,16 @@ class Model:
         # print(x.shape)
         return self.l4(x)
 
-# class Model:
-#   def __init__(self, num_of_classes):
-#     self.l1 = nn.Conv2d(3, 32, kernel_size=(3,3))
-#     self.l2 = nn.Conv2d(32, 64, kernel_size=(3,3))
-#     self.l3 = nn.Linear(64 * 62 * 62, num_of_classes)
-#
-#   def __call__(self, x:Tensor) -> Tensor:
-#     x = self.l1(x).relu().max_pool2d((2,2))
-#     x = self.l2(x).relu().max_pool2d((2,2))
-#     return self.l3(x.flatten(1).dropout(0.5))
+class SmallModel:
+  def __init__(self, num_of_classes):
+    self.l1 = nn.Conv2d(3, 32, kernel_size=(3,3))
+    self.l2 = nn.Conv2d(32, 64, kernel_size=(3,3))
+    self.l3 = nn.Linear(64 * 62 * 62, num_of_classes)
+
+  def __call__(self, x:Tensor) -> Tensor:
+    x = self.l1(x).relu().max_pool2d((2,2))
+    x = self.l2(x).relu().max_pool2d((2,2))
+    return self.l3(x.flatten(1).dropout(0.5))
 
 
 parser = argparse.ArgumentParser(description="Train our model on a dataset from a train and test directory")
@@ -53,7 +54,8 @@ loader: Dataloader = Dataloader(train_folder, 1000)
 test_loader: Dataloader = Dataloader(test_folder, 100, shuffle=True)
 X_train, Y_train = loader.get_tensor()
 X_test, Y_test = test_loader.get_tensor()
-print(Y_test.numpy())
+# with np.printoptions(threshold=np.inf):
+#     print(Y_test.numpy())
 samples = Tensor.randint(100, high=X_train.shape[0])
 # print(samples)
 X_test, Y_test = X_test[samples], Y_test[samples]
@@ -66,7 +68,7 @@ print(Y_test.numpy())
 # print(folder[0])
 # (60000, 1, 28, 28) dtypes.uchar (60000,) dtypes.uchar
 
-model = Model(len(train_folder.classes))
+model = SmallModel(len(train_folder.classes))
 acc = (model(X_test).argmax(axis=1) == Y_test).mean()
 # NOTE: tinygrad is lazy, and hasn't actually run anything by this point
 print(acc.item())  # ~10% accuracy, as expected from a random model

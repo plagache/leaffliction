@@ -108,6 +108,9 @@ sample: augmentation
 train:
 	${PYTHON} train.py train validation
 
+viz:
+	VIZ=1 ${PYTHON} train.py train validation
+
 reaugmentation: clean extract augmentation
 
 test:
