@@ -111,6 +111,9 @@ train:
 viz:
 	VIZ=1 ${PYTHON} train.py train validation
 
+resnet:
+	${PYTHON} resnet.py
+
 reaugmentation: clean extract augmentation
 
 test:
