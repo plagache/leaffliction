@@ -18,10 +18,16 @@ learn = vision_learner(dls, resnet18, metrics=accuracy)
 results = learn.validate()
 print(f"Validation accuracy: {results[1]:.2f}")
 
+# optimal_learning_rate = learn.lr_find()
+# print(f"Optimal learning rate: {optimal_learning_rate}")
+# learn.fine_tune(2, base_lr=optimal_learning_rate)
+learn.fine_tune(3)
 
 for i in range(100):
     image, label = dls.train_ds[i]
-    print(image, label)
+    # print(image, label)
+    label_name = dls.vocab[label]
+    print(f"Decoded label: {label_name}, Encoded label: {label}")
     pil_image = PILImage.create(image)
 
 
@@ -33,8 +39,5 @@ print(f"Validation accuracy: {results[1]:.2f}")
 
 plt.show()
 exit()
-learn.fine_tune(3)
-optimal_learning_rate = learn.lr_find()
-learn.fine_tune(2, base_lr=optimal_learning_rate)
 learn.save('resnet18_finetuned')
 learn.export('resnet18_finetuned.pkl')

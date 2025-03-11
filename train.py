@@ -4,6 +4,8 @@ import timeit
 from tinygrad import Context, Device, GlobalCounters, Tensor, TinyJit, nn
 from tinygrad.nn.datasets import mnist
 
+from resnet import ResNet
+
 from utils import DatasetFolder, Dataloader
 import numpy as np
 
@@ -61,6 +63,7 @@ samples = Tensor.randint(100, high=X_train.shape[0])
 X_test, Y_test = X_test[samples], Y_test[samples]
 # X_test, Y_test = X_test[:100], Y_test[:100]
 print(Y_test.numpy())
+print(X_test.shape, X_test.dtype)
 # print(X_train[0].numpy())
 # print(X_train, Y_train, X_test, Y_test)
 # print(X_train.dtype, Y_train.dtype)
@@ -68,13 +71,16 @@ print(Y_test.numpy())
 # print(folder[0])
 # (60000, 1, 28, 28) dtypes.uchar (60000,) dtypes.uchar
 
-model = SmallModel(len(train_folder.classes))
+# model = SmallModel(len(train_folder.classes))
+model = ResNet(50, len(train_folder.classes))
+model.load_from_pretrained()
 acc = (model(X_test).argmax(axis=1) == Y_test).mean()
 # NOTE: tinygrad is lazy, and hasn't actually run anything by this point
 print(acc.item())  # ~10% accuracy, as expected from a random model
+# exit(0)
 
 optim = nn.optim.Adam(nn.state.get_parameters(model))
-batch_size = 16
+batch_size = 1
 # batch_size = 128
 
 
@@ -83,23 +89,29 @@ def t_step():
     samples = Tensor.randint(batch_size, high=X_train.shape[0])
     # print(samples)
     X, Y = X_train[samples], Y_train[samples]
-    # print(Y_train[samples].numpy())
+    # print(Y.numpy())
+    # print(X.shape)
     optim.zero_grad()
     loss = model(X).sparse_categorical_crossentropy(Y).backward()
     optim.step()
     return loss
 
-# import timeit
-# timeit.repeat(step, repeat=5, number=1)
+timeit.repeat(t_step, repeat=5, number=1)
 
-for step in range(500):
-    loss = t_step()
-    if step % 100 == 0:
-        Tensor.training = False
-        model_prediction = model(X_test).argmax(axis=1)
-        acc = (model_prediction == Y_test).mean().item()
-        if acc >= 0.9:
-            break
-        print(f"step {step:4d}, loss {loss.item():.2f}, acc {acc*100.:.2f}%")
-print(f"step {step:4d}, loss {loss.item():.2f}, acc {acc*100.:.2f}%")
+GlobalCounters.reset()
+with Context(DEBUG=2): t_step()
+
+jit_step = TinyJit(t_step)
+timeit.repeat(jit_step, repeat=5, number=1)
+
+# for step in range(500):
+#     loss = t_step()
+#     if step % 100 == 0:
+#         Tensor.training = False
+#         model_prediction = model(X_test).argmax(axis=1)
+#         acc = (model_prediction == Y_test).mean().item()
+#         if acc >= 0.9:
+#             break
+#         print(f"step {step:4d}, loss {loss.item():.2f}, acc {acc*100.:.2f}%")
+# print(f"step {step:4d}, loss {loss.item():.2f}, acc {acc*100.:.2f}%")
 # print(loss.dtype)
