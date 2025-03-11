@@ -114,6 +114,12 @@ viz:
 resnet:
 	${PYTHON} resnet.py
 
+fast:
+	${PYTHON} fast_model.py
+
+fast_inference:
+	${PYTHON} fast_inference.py
+
 reaugmentation: clean extract augmentation
 
 test:
