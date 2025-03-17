@@ -114,6 +114,9 @@ viz:
 resnet:
 	${PYTHON} resnet.py
 
+tiny_train:
+	${PYTHON} tiny_train_resnet.py
+
 reaugmentation: clean extract augmentation
 
 test:
@@ -138,4 +141,4 @@ re: fclean setup run
 #   SPEC                                         #
 #------------------------------------------------#
 .SILENT:
-.PHONY: setup venv uv_upgrade pip_upgrade install module requirements list version size run clean fclean re download train
+.PHONY: setup venv uv_upgrade pip_upgrade install module requirements list version size run clean fclean re download train tiny_train

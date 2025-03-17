@@ -3,6 +3,7 @@ import timeit
 
 from tinygrad import Context, Device, GlobalCounters, Tensor, TinyJit, nn
 from tinygrad.nn.datasets import mnist
+from resnet import ResNet
 
 from utils import DatasetFolder, Dataloader
 import numpy as np
@@ -56,11 +57,9 @@ X_train, Y_train = loader.get_tensor()
 X_test, Y_test = test_loader.get_tensor()
 # with np.printoptions(threshold=np.inf):
 #     print(Y_test.numpy())
-samples = Tensor.randint(100, high=X_train.shape[0])
-# print(samples)
+samples = Tensor.randint(10, high=X_test.shape[0])
 X_test, Y_test = X_test[samples], Y_test[samples]
 # X_test, Y_test = X_test[:100], Y_test[:100]
-print(Y_test.numpy())
 # print(X_train[0].numpy())
 # print(X_train, Y_train, X_test, Y_test)
 # print(X_train.dtype, Y_train.dtype)
@@ -68,14 +67,14 @@ print(Y_test.numpy())
 # print(folder[0])
 # (60000, 1, 28, 28) dtypes.uchar (60000,) dtypes.uchar
 
-model = SmallModel(len(train_folder.classes))
+model = ResNet(18, len(train_folder.classes))
+model.load_from_pretrained()
 acc = (model(X_test).argmax(axis=1) == Y_test).mean()
 # NOTE: tinygrad is lazy, and hasn't actually run anything by this point
 print(acc.item())  # ~10% accuracy, as expected from a random model
 
 optim = nn.optim.Adam(nn.state.get_parameters(model))
-batch_size = 16
-# batch_size = 128
+batch_size = 1
 
 
 def t_step():
@@ -102,4 +101,4 @@ for step in range(500):
             break
         print(f"step {step:4d}, loss {loss.item():.2f}, acc {acc*100.:.2f}%")
 print(f"step {step:4d}, loss {loss.item():.2f}, acc {acc*100.:.2f}%")
-# print(loss.dtype)
+print(loss.dtype)
