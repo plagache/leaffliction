@@ -1,6 +1,7 @@
 __pycache__/
 .venv
 images/
+models/
 activate
 leaves.zip
 **/*.jpg

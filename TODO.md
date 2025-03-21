@@ -95,6 +95,7 @@ A: Consider augmentations that mimic natural variations:
 - DatasetFolders subclass: Implements item and category retrieval based on folder structure
 - DataLoaders class: Takes Datasets class as parameter
 - Transform: Function of Datasets
+- DataLoaders from fastai does not seem to create/copy new image on disk
 
 
 ### Implementation Details
