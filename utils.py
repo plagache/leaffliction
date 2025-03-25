@@ -296,9 +296,10 @@ class Dataloader:
         # t0 = time.monotonic()
         simple_array = np.stack(self.dataset.numpy_arrays).reshape(-1, 3, 256, 256)
 
-        labels_array = np.zeros(len(self.dataset))
+        labels_array = np.zeros(len(self.dataset), dtype=np.uint8)
         for label, indices in self.dataset.indices_dictionnary.items():
             np.put(labels_array, indices, self.dataset.mapped_dictionnary[label])
+        return simple_array, labels_array
         self.y_tensor = Tensor(labels_array, requires_grad=False, dtype=dtypes.uchar)
         self.x_tensor = Tensor(simple_array, requires_grad=False, dtype=dtypes.float)
         self.x_tensor /= 255.0

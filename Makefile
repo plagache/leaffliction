@@ -106,7 +106,7 @@ sample: augmentation
 	${PYTHON} sample.py augmented_directory
 
 train:
-	${PYTHON} train.py train validation
+	${PYTHON} train_.py train validation
 
 viz:
 	VIZ=1 ${PYTHON} train.py train validation

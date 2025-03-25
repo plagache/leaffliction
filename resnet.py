@@ -93,9 +93,9 @@ class ResNet:
         return layers
 
     def forward(self, x):
-        print(f"input shape:{x.shape}")
+        # print(f"input shape:{x.shape}")
         is_feature_only = self.fc is None
-        print(f"has fc {is_feature_only == False}")
+        # print(f"has fc {is_feature_only == False}")
         if is_feature_only:
             features = []
         out = self.bn1(self.conv1(x)).relu()
@@ -103,23 +103,23 @@ class ResNet:
         out = out.sequential(self.layer1)
         if is_feature_only:
             features.append(out)
-        print(f"after first layer | out shape:{out.shape}")
+        # print(f"after first layer | out shape:{out.shape}")
         out = out.sequential(self.layer2)
         if is_feature_only:
             features.append(out)
-        print(f"after second layer | out shape:{out.shape}")
+        # print(f"after second layer | out shape:{out.shape}")
         out = out.sequential(self.layer3)
         if is_feature_only:
             features.append(out)
-        print(f"after third layer | out shape:{out.shape}")
+        # print(f"after third layer | out shape:{out.shape}")
         out = out.sequential(self.layer4)
         if is_feature_only:
             features.append(out)
-        print(f"after fourth layer | out shape:{out.shape}")
+        # print(f"after fourth layer | out shape:{out.shape}")
         if not is_feature_only:
             out = out.mean([2, 3])
             out = self.fc(out.cast(dtypes.float32))
-            print(f"in fc layer | out shape:{out.shape}")
+            # print(f"in fc layer | out shape:{out.shape}")
             return out
         return features
 
