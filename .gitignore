@@ -2,6 +2,7 @@ __pycache__/
 .venv
 images/
 models/
+*.pkl
 activate
 leaves.zip
 **/*.jpg

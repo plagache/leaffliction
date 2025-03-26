@@ -120,6 +120,9 @@ fast:
 fast_inference:
 	${PYTHON} fast_inference.py
 
+fine:
+	${PYTHON} fine_tune.py train validation
+
 reaugmentation: clean extract augmentation
 
 test:
