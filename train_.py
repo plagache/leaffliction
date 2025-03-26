@@ -7,7 +7,7 @@ from utils import DatasetFolder, Dataloader
 from tinygrad.nn.state import get_parameters
 from tinygrad.nn import optim
 from tinygrad.helpers import getenv
-from tiny_utils import train, evaluate, fetch_mnist
+from tiny_utils import train, evaluate
 
 
 class ComposeTransforms:
@@ -43,13 +43,12 @@ if __name__ == "__main__":
     lr = 5e-3
     transform = ComposeTransforms([
         lambda x: [Image.fromarray(xx, mode="RGB").resize((224, 224)) for xx in x],
-        lambda x: np.stack([np.asarray(xx).reshape(3, 224, 224).astype(np.float32) for xx in x], 0),
+        lambda x: [np.asarray(xx).reshape(3, 224, 224).astype(np.float16) for xx in x],
+        lambda x: np.stack(x, 0),
         lambda x: x / 255.0,
     ])
-    target_transform = ComposeTransforms([
 
-    ])
-    for _ in range(1):
+    for _ in range(2):
         optimizer = optim.SGD(get_parameters(model), lr=lr, momentum=0.9)
         train(model, X_train, Y_train, optimizer, 100, BS=32, transform=transform)
         evaluate(model, X_test, Y_test, num_classes=classes, transform=transform)
