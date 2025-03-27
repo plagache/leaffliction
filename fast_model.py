@@ -29,6 +29,11 @@ if __name__ == "__main__":
     batch_size = dls.bs
     total_batches = len(dls.train)
     print(f"number of items: {total_items}, batch_size: {batch_size}, number of batches: {total_batches}")
+    print(dls.vocab)
+    print(dls.vocab.o2i)
+    # print(dls.train.items)
+    # print(dls.train_ds.items)
+    exit(0)
     # 40k images is not optimal for training
 
     learn = vision_learner(dls, resnet18, metrics=accuracy)

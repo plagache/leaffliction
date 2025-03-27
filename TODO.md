@@ -20,6 +20,8 @@
 - [x] Implement `DatasetLoader` class:
     - [x] Add shuffle to dataloader
     - [ ] Implement show_batch functionality
+    - [ ] setup train and valid datasets and batches
+    - [ ] implement seed to make train and valid dataset the same each time
 - [ ] Display one item from each category
 - [x] Analyze data distribution
 
