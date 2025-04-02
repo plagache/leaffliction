@@ -10,6 +10,7 @@ from typing import Optional, Self, Union
 
 import cv2
 import numpy as np
+from numpy.dtypes import StringDType
 from Augmentor.Operations import CropRandom, Distort, Flip, Resize, Rotate, Shear, Skew
 from PIL import Image
 from tinygrad import Device, Tensor
@@ -283,6 +284,14 @@ class Dataloader:
         batch = next(iter(self))
         print(batch)
         pass
+
+    def get_data(self):
+        self.dataset.to_images()
+
+        labels_array = np.empty(len(self.dataset), dtype=StringDType())
+        for label, indices in self.dataset.indices_dictionnary.items():
+            np.put(labels_array, indices, label)
+        return self.dataset.images, labels_array.tolist()
 
     def get_tensor(self) -> tuple(Tensor, Tensor):
         """

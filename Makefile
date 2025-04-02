@@ -105,6 +105,9 @@ transformation: debug_directory
 sample: augmentation
 	${PYTHON} sample.py augmented_directory
 
+feature:
+	${PYTHON} feature_extraction.py train validation
+
 train:
 	${PYTHON} train_.py train validation
 

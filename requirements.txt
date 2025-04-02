@@ -7,5 +7,7 @@ numpy
 tinygrad
 opencv-python   # Open Computer Vision
 plantcv         # Plant Computer Vision module
+scikit-learn
+img2vec-pytorch
 # pillow          # python image library # already in Augmentor
 # imgaug          # image augmentation library 941M 27 packages integrate scipy scikit-image opencv-python networkx
