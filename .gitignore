@@ -7,3 +7,4 @@ leaves.zip
 **/*.JPG
 Session.vim
 debug/
+*.safetensor

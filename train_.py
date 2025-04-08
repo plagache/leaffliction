@@ -1,13 +1,14 @@
 import argparse
 import numpy as np
 from PIL import Image
-from resnet import ResNet
 from utils import DatasetFolder, Dataloader
+import time
 
-from tinygrad import nn, Tensor
+from tinygrad import Tensor, TinyJit, nn, GlobalCounters
+from tinygrad.helpers import getenv, colored, trange
 from tinygrad.nn.state import get_parameters
 from tinygrad.nn import optim
-from tinygrad.helpers import getenv
+from tinygrad.nn.state import safe_save, get_state_dict
 from tiny_utils import train, evaluate
 
 
@@ -32,7 +33,7 @@ class AlexNet:
         # self.pool = nn.MaxPool2d(3, 2)
         self.fc1 = nn.Linear(9216, 4096)
         self.fc2 = nn.Linear(4096, 4096)
-        self.fc3 = nn.Linear(4096, 8)
+        self.fc3 = nn.Linear(4096, num_classes)
 
     def __call__(self, x: Tensor) -> Tensor:
         x = self.conv1(x).relu().max_pool2d((3, 3), 2)
@@ -52,34 +53,52 @@ if __name__ == "__main__":
     parser.add_argument("test_directory", help="the validation set directory to parse")
     args = parser.parse_args()
 
-    train_folder: DatasetFolder = DatasetFolder(args.train_directory)
-    test_folder: DatasetFolder = DatasetFolder(args.test_directory)
-    # print(folder.mapped_dictionnary)
-    # print(folder.count_dictionnary)
-    # print(folder.indices_dictionnary)
+    # TESTING USING ONLY VALIDATION SET
+    train_folder: DatasetFolder = DatasetFolder(args.test_directory)
+    # test_folder: DatasetFolder = DatasetFolder(args.test_directory)
+
     loader: Dataloader = Dataloader(train_folder, 1000)
-    test_loader: Dataloader = Dataloader(test_folder, 100, shuffle=True)
-    X_train, Y_train = loader.get_tensor()
-    X_test, Y_test = test_loader.get_tensor()
+    # test_loader: Dataloader = Dataloader(test_folder, 100, shuffle=True)
+
+    X_train, Y_train = loader.get_tensor(new_size=(227,227))
+
+    # X_test, Y_test = test_loader.get_tensor(new_size=(227,227))
+
     classes = len(train_folder.classes)
 
     model = AlexNet(num_classes=classes)
-    # model = ResNet(getenv("NUM", 18), num_classes=classes)
-    # model.load_from_pretrained()
+    opt = nn.optim.Adam(nn.state.get_parameters(model))
+    # model = ResNet(18, num_classes=classes)
+    # TRANSFER = getenv('TRANSFER')
+    # if TRANSFER:
+    #     model.load_from_pretrained()
 
-    lr = 5e-3
-    transform = ComposeTransforms([
-        lambda x: [Image.fromarray(xx, mode="RGB").resize((227, 227)) for xx in x],
-        lambda x: [np.asarray(xx).reshape(3, 227, 227).astype(np.float16) for xx in x],
-        # lambda x: [Image.fromarray(xx, mode="RGB").resize((224, 224)) for xx in x],
-        # lambda x: [np.asarray(xx).reshape(3, 224, 224).astype(np.float16) for xx in x],
-        lambda x: np.stack(x, 0),
-        lambda x: x / 255.0,
-    ])
+    @TinyJit
+    @Tensor.train()
+    def train_step(samples) -> Tensor:
+        opt.zero_grad()
+        # TODO: this "gather" of samples is very slow. will be under 5s when this is fixed
+        loss = model(X_train[samples]).sparse_categorical_crossentropy(Y_train[samples]).backward()
+        opt.step()
+        return loss
 
-    for _ in range(2):
-        optimizer = optim.SGD(get_parameters(model), lr=lr, momentum=0.9)
-        train(model, X_train, Y_train, optimizer, 200, BS=64, transform=transform)
-        evaluate(model, X_test, Y_test, num_classes=classes, transform=transform)
-        lr /= 1.2
-        print(f"reducing lr to {lr:.7f}")
+    @TinyJit
+    @Tensor.test()
+    def get_test_acc(samples) -> Tensor: return (model(X_train[samples]).argmax(axis=1) == Y_train[samples]).mean()*100
+
+    test_acc = float('nan')
+    for i in (t:=trange(getenv("STEPS", 140))):
+        GlobalCounters.reset()   # NOTE: this makes it nice for DEBUG=2 timing
+        samples = Tensor.randint(getenv("BS", 32), high=X_train.shape[0])
+        loss = train_step(samples)
+        if i%10 == 9: test_acc = get_test_acc(samples).item()
+        t.set_description(f"loss: {loss.item():6.2f} test_accuracy: {test_acc:5.2f}%")
+
+    # verify eval acc
+    if target := getenv("TARGET_EVAL_ACC_PCT", 0.0):
+        if test_acc >= target and test_acc != 100.0: print(colored(f"{test_acc=} >= {target}", "green"))
+        else: raise ValueError(colored(f"{test_acc=} < {target}", "red"))
+
+    state_dict = get_state_dict(model)
+    model_name = f"{model.__class__.__name__}.safetensor"
+    safe_save(state_dict, model_name)
