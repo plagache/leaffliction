@@ -10,6 +10,7 @@ from tinygrad.nn.state import get_parameters
 from tinygrad.nn import optim
 from tinygrad.nn.state import safe_save, get_state_dict
 from tiny_utils import train, evaluate
+from resnet import ResNet18
 
 
 class ComposeTransforms:
@@ -54,24 +55,24 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # TESTING USING ONLY VALIDATION SET
-    train_folder: DatasetFolder = DatasetFolder(args.test_directory)
-    # test_folder: DatasetFolder = DatasetFolder(args.test_directory)
+    # train_folder: DatasetFolder = DatasetFolder(args.test_directory)
+    test_folder: DatasetFolder = DatasetFolder(args.test_directory)
 
-    loader: Dataloader = Dataloader(train_folder, 1000)
+    loader: Dataloader = Dataloader(test_folder, 1000)
     # test_loader: Dataloader = Dataloader(test_folder, 100, shuffle=True)
 
-    X_train, Y_train = loader.get_tensor(new_size=(227,227))
+    # X_train, Y_train = loader.get_tensor()
+    X_train, Y_train = loader.get_tensor(new_size=(181, 181))
 
-    # X_test, Y_test = test_loader.get_tensor(new_size=(227,227))
-
-    classes = len(train_folder.classes)
+    classes = len(test_folder.classes)
 
     model = AlexNet(num_classes=classes)
+    model = ResNet18(num_classes=classes)
     opt = nn.optim.Adam(nn.state.get_parameters(model))
     # model = ResNet(18, num_classes=classes)
-    # TRANSFER = getenv('TRANSFER')
-    # if TRANSFER:
-    #     model.load_from_pretrained()
+    TRANSFER = getenv('TRANSFER')
+    if TRANSFER:
+        model.load_from_pretrained()
 
     @TinyJit
     @Tensor.train()
@@ -87,9 +88,9 @@ if __name__ == "__main__":
     def get_test_acc(samples) -> Tensor: return (model(X_train[samples]).argmax(axis=1) == Y_train[samples]).mean()*100
 
     test_acc = float('nan')
-    for i in (t:=trange(getenv("STEPS", 140))):
+    for i in (t:=trange(getenv("STEPS", 280))):
         GlobalCounters.reset()   # NOTE: this makes it nice for DEBUG=2 timing
-        samples = Tensor.randint(getenv("BS", 32), high=X_train.shape[0])
+        samples = Tensor.randint(getenv("BS", 64), high=X_train.shape[0])
         loss = train_step(samples)
         if i%10 == 9: test_acc = get_test_acc(samples).item()
         t.set_description(f"loss: {loss.item():6.2f} test_accuracy: {test_acc:5.2f}%")
