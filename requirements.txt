@@ -4,7 +4,7 @@ PyQt6           # lib graphic
 flake8          # norme
 Augmentor       # image augmentation library 589M 20 packages
 numpy
-tinygrad
+fastai
 git+https://github.com/tinygrad/tinygrad.git
 opencv-python   # Open Computer Vision
 plantcv         # Plant Computer Vision module
