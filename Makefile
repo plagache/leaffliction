@@ -114,6 +114,9 @@ viz:
 resnet:
 	${PYTHON} resnet.py
 
+alexnet:
+	${PYTHON} alex_torch.py
+
 fast:
 	${PYTHON} fast_model.py
 
