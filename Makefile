@@ -125,8 +125,6 @@ fast_inference:
 
 fine:
 	${PYTHON} fine_tune.py train validation
-tiny_train:
-	${PYTHON} tiny_train_resnet.py
 
 reaugmentation: clean extract augmentation
 
@@ -152,4 +150,4 @@ re: fclean setup run
 #   SPEC                                         #
 #------------------------------------------------#
 .SILENT:
-.PHONY: setup venv uv_upgrade pip_upgrade install module requirements list version size run clean fclean re download train tiny_train
+.PHONY: setup venv uv_upgrade pip_upgrade install module requirements list version size run clean fclean re download train
