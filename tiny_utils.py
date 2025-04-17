@@ -29,12 +29,9 @@ def train(model, X_train, Y_train, optim, steps, BS=128, lossfn=lambda out,y: ou
       samp = np.random.randint(0, X_train.shape[0], size=(BS))
       x = Tensor(transform(X_train[samp]), requires_grad=False)
       y = Tensor(target_transform(Y_train[samp]))
-      with np.printoptions(threshold=np.inf):
-          print("x shape", x.numpy().shape, X_train.shape)
-          print("y shape", y.numpy().shape)
-          # print("x numpy", x[0].numpy(), X_train[0])
-
-
+      # with np.printoptions(threshold=np.inf):
+      #     print("HERE", x.numpy().shape, X_train.shape)
+      #     print("HERE2", y.numpy().shape)
       loss, accuracy = train_step(x, y)
       # printing
       if not noloss:

@@ -178,12 +178,14 @@ class DatasetFolder:
         self.items = self.samples
         return self
 
-    def to_numpy(self) -> Self:
+    def to_numpy(self, new_size=None) -> Self:
         if self.numpy_arrays is None:
             self.numpy_arrays = []
             t0 = time.monotonic()
             for path in self.samples:
                 image_array = cv2.imread(str(path))
+                if new_size:
+                    image_array = cv2.resize(image_array, dsize=new_size, interpolation=cv2.INTER_LANCZOS4)
                 self.numpy_arrays.append(image_array)
             t1 = time.monotonic()
             print(f"create numpy list: {t1 - t0}")
@@ -284,7 +286,7 @@ class Dataloader:
         print(batch)
         pass
 
-    def get_tensor(self) -> tuple(Tensor, Tensor):
+    def get_tensor(self, new_size=None) -> tuple(Tensor, Tensor):
         """
         Return the X_train, Y_train as tinygrad.Tensor from the dataset
         from images numpy arrays create a unique Tensor containing all the dataset => X_train
@@ -292,20 +294,22 @@ class Dataloader:
         """
         print("0")
         if self.dataset.numpy_arrays is None:
-            self.dataset.to_numpy()
+            self.dataset.to_numpy(new_size)
 
-        # t0 = time.monotonic()
-        simple_array = np.stack(self.dataset.numpy_arrays).reshape(-1, 3, 256, 256)
+        if new_size is None:
+            new_size = (256, 256)
+        t0 = time.monotonic()
+        simple_array = np.stack(self.dataset.numpy_arrays).reshape(-1, 3, new_size[0], new_size[1])
 
-        labels_array = np.zeros(len(self.dataset))
+        labels_array = np.zeros(len(self.dataset), dtype=np.uint8)
         for label, indices in self.dataset.indices_dictionnary.items():
             np.put(labels_array, indices, self.dataset.mapped_dictionnary[label])
+        # return simple_array, labels_array
         self.y_tensor = Tensor(labels_array, requires_grad=False, dtype=dtypes.uchar)
-        self.x_tensor = Tensor(simple_array, requires_grad=False, dtype=dtypes.float)
-        # self.x_tensor /= 255.0
+        self.x_tensor = Tensor(simple_array, requires_grad=False, dtype=dtypes.float32)
+        self.x_tensor /= 255.0
         print(self.x_tensor.shape)
-        print(self.y_tensor.shape)
-        # t1 = time.monotonic()
-        # print(f"create tensor: {t1 - t0}")
+        t1 = time.monotonic()
+        print(f"create tensor: {t1 - t0}")
         # print(self.x_tensor[0].numpy())
         return self.x_tensor, self.y_tensor
