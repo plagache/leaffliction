@@ -5,7 +5,7 @@ flake8          # norme
 Augmentor       # image augmentation library 589M 20 packages
 numpy
 tinygrad
-fastai
+git+https://github.com/tinygrad/tinygrad.git
 opencv-python   # Open Computer Vision
 plantcv         # Plant Computer Vision module
 # pillow          # python image library # already in Augmentor
