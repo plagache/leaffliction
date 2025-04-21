@@ -131,6 +131,9 @@ reaugmentation: clean extract augmentation
 test:
 	${PYTHON} test_utils.py -v
 
+predict:
+	${BIN}/gradio predict.py
+
 clean:
 	rm -rf debug*
 	rm -rf augmented*
