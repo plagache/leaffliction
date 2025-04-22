@@ -63,6 +63,7 @@
 - [ ] Simplify training process (optional debug/context/jit with env variable)
 - [ ] Visualize kernel search
 - [ ] Train model on prepared data
+- [ ] Export weights after training
 
 
 ### Classification
@@ -75,6 +76,12 @@
 - [ ] Test distribution with different directory structures
 - [ ] Validate data integrity
 - [ ] Check normalization / resize effects
+
+### Predict
+
+- [ ] import model/weights
+- [ ] predict function given an image
+- [ ] display category and image(optionally transformed)
 
 
 ## Ideas & Questions
