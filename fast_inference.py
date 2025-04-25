@@ -4,6 +4,7 @@ import torch
 # import fastai
 # print(fastai)
 from fastai.learner import load_learner
+from fast_model import AlexNet
 
 def predict_image(learner, image_path):
     test_dl = learner.dls.test_dl([image_path], with_labels=False)
@@ -31,7 +32,8 @@ if __name__ == "__main__":
     state_dict = torch.load('models/weights_only.pth')
     # state_dict = torch.load('models/resnet18_finetuned.pth', weights_only=False)
     # print(state_dict)
-    model = resnet18()  # Use the same architecture as training
+    # model = resnet18()  # Use the same architecture as training
+    model = AlexNet()  # Use the same architecture as training
     print(model)
     model.load_state_dict(state_dict)
     print(model)

@@ -110,10 +110,11 @@ if __name__ == "__main__":
     # results = learn.validate()
     # print(f"Validation accuracy: {results[1]:.2f}")
 
-    # optimal_learning_rate = learn.lr_find()
-    # print(f"Optimal learning rate: {optimal_learning_rate}")
-    # learn.fine_tune(2, base_lr=optimal_learning_rate)
-    epoch = 3
+    epoch = 10
+    suggested_learning_rate = learn.lr_find()
+    optimal_lr = suggested_learning_rate.valley
+    print(f"\nOptimal learning rate: {optimal_lr}\n")
+    learn.fine_tune(epoch, base_lr=optimal_lr)
     # learn.fine_tune(epoch)
 
     results = learn.validate()
@@ -127,5 +128,5 @@ if __name__ == "__main__":
     model_name = f"{model.__class__.__name__}-Epch:{epoch}-Acc:{results[1]*100:.0f}"
     print(f"model name for saving: {model_name}")
 
-    # learn.save("resnet18_finetuned")
+    learn.save(model_name)
     # learn.export("resnet18_finetuned.pkl")
