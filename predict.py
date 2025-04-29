@@ -1,6 +1,6 @@
 import gradio as gr
 import torch
-from fast_model import AlexNet
+from pytorch_inference import predict_image, prepare_model
 
 def give_image(image_path):
     if image_path:
@@ -16,24 +16,10 @@ def predict(model_path, image_path):
         return "No image selected"
     if not model_path:
         return "No model selected"
-
-    #load model path
-    model_state_dict = torch.load(model_path, weights_only=False)
-    # print(model_state_dict)
-    model = AlexNet()
-
-    # this step does not work
-    # Missing key(s) in state_dict: "conv1.weight", "conv1.bias", "conv2.weight", "conv2.bias", "conv3.weight", "conv3.bias", "conv4.weight", "conv4.bias", "conv5.weight", "conv5.bias", "fc1.weight", "fc1.bias", "fc2.weight", "fc2.bias", "fc3.weight", "fc3.bias".
-    # Unexpected key(s) in state_dict: "model", "opt".
-    model.load_state_dict(model_state_dict)
-
-    # Needed for inference (https://pytorch.org/tutorials/beginner/saving_loading_models.html#save-load-state-dict-recommended)
-    model.eval()
-
-    # load image
-    # resize 224x224
-    # predict image
-    return f"it doesn't work yet"
+    
+    model, classes = prepare_model(model_path)
+    prediction = predict_image(image_path, model, classes)
+    return prediction
 
 with gr.Blocks() as demo:
     with gr.Row():

@@ -81,7 +81,7 @@
 
 - [ ] import model/weights
 - [ ] predict function given an image
-- [ ] display category and image(optionally transformed)
+- [ ] display category/categories and image(optionally transformed)
 
 
 ## Ideas & Questions
