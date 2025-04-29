@@ -25,6 +25,29 @@ def verification(dls):
         pred_class, pred_idx, outputs = learn.predict(pil_image)
         print(f"Predicted class: {pred_class}, Actual label: {label}")
 
+class SmallModel(nn.Module):
+    def __init__(self, num_of_classes):
+        super(SmallModel, self).__init__()
+        self.features = nn.Sequential(
+            nn.Conv2d(3, 32, kernel_size=(3, 3)),
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2),
+            nn.Conv2d(32, 64, kernel_size=(3, 3)),
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2),
+        )
+        self.classifier = nn.Sequential(
+            nn.Flatten(1),
+            nn.Dropout(0.5),
+            nn.Linear(64 * 54 * 54, num_of_classes)
+        )
+
+    def forward(self, x):
+        x = self.features(x)
+        x = self.classifier(x)
+        return x
+
+
 class AlexNet(nn.Module):
     def __init__(self):
         # describe the operation
@@ -76,7 +99,8 @@ if __name__ == "__main__":
         get_items=get_image_files,
         splitter=RandomSplitter(valid_pct=0.2, seed=42),
         get_y=parent_label,
-        item_tfms=Resize(227)
+        # item_tfms=Resize(227)
+        item_tfms=Resize(224)
     ).dataloaders(path)
     # dls.show_batch(max_n=6)
 
@@ -91,26 +115,25 @@ if __name__ == "__main__":
     # exit(0)
     # 40k images is not optimal for training
 
-    # learn = vision_learner(dls, resnet18, metrics=accuracy)
 
     opt_func = partial(OptimWrapper, opt=optim.Adam)
 
-    model = AlexNet()
+    # model = AlexNet()
+    # print(model)
+    # print(type(model))
+
+    model = SmallModel(len(dls.vocab))
     criterion = nn.CrossEntropyLoss()
     learn = Learner(dls, model, loss_func=criterion, opt_func=opt_func, metrics=accuracy)
 
+    # learn = vision_learner(dls, resnet18, metrics=accuracy)
+
     # print(dls.device)
     print(learn.model)
-    # print(list(model.parameters()))
+    print(type(learn.model))
+    exit(0)
 
-    # learn = vision_learner(dls, alexnet, metrics=accuracy)
-    # print(learn.model)
-    # exit(0)
-
-    # results = learn.validate()
-    # print(f"Validation accuracy: {results[1]:.2f}")
-
-    epoch = 10
+    epoch = 20
     suggested_learning_rate = learn.lr_find()
     optimal_lr = suggested_learning_rate.valley
     print(f"\nOptimal learning rate: {optimal_lr}\n")
