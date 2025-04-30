@@ -26,7 +26,7 @@ def verification(dls):
         print(f"Predicted class: {pred_class}, Actual label: {label}")
 
 class SmallModel(nn.Module):
-    def __init__(self, num_of_classes):
+    def __init__(self):
         super(SmallModel, self).__init__()
         self.features = nn.Sequential(
             nn.Conv2d(3, 32, kernel_size=(3, 3)),
@@ -39,7 +39,7 @@ class SmallModel(nn.Module):
         self.classifier = nn.Sequential(
             nn.Flatten(1),
             nn.Dropout(0.5),
-            nn.Linear(64 * 54 * 54, num_of_classes)
+            nn.Linear(64 * 54 * 54, 8)
         )
 
     def forward(self, x):
@@ -122,7 +122,7 @@ if __name__ == "__main__":
     # print(model)
     # print(type(model))
 
-    model = SmallModel(len(dls.vocab))
+    model = SmallModel()
     criterion = nn.CrossEntropyLoss()
     learn = Learner(dls, model, loss_func=criterion, opt_func=opt_func, metrics=accuracy)
 

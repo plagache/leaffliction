@@ -5,14 +5,25 @@ import torchvision.transforms as T
 from pathlib import Path
 from PIL import Image
 
-def predict_image(image_path, model, classes):
+def get_model_from_path(model_path):
+    match model_path:
+        case model_path if "AlexNet" in model_path:
+            return AlexNet, T.Compose([
+                T.Resize(227),
+                T.ToTensor(),
+            ])
+        case model_path if "SmallModel" in model_path:
+            return SmallModel, T.Compose([
+                T.Resize(224),
+                T.ToTensor(),
+            ])
+    return "no model found"
+
+def predict_image(image_path, model_path):
+    model, classes, transform = prepare_model(model_path)
+
     # load pil image
     image = Image.open(image_path)
-    # pre transform image to tensor
-    transform = T.Compose([
-        T.Resize(227),
-        T.ToTensor(),
-    ])
     trans_image = transform(image)
     image_tensor = trans_image.unsqueeze(0)
 
@@ -22,7 +33,7 @@ def predict_image(image_path, model, classes):
     probabilities = torch.nn.functional.softmax(output[0], dim=0)
     predicted_class = torch.argmax(probabilities).item()
 
-    return f"Predicted class: {classes[predicted_class]}"
+    return f"{classes[predicted_class]}"
 
 def prepare_model(model_path):
     data_folder = Path("validation")
@@ -30,12 +41,13 @@ def prepare_model(model_path):
 
     state_dict = torch.load(model_path, weights_only=False)
     
-    # USE MODEL PATH TO COMPUTE WHICH MODEL TO USE
-    model = AlexNet()
+    model_type, transform = get_model_from_path(model_path)
+    model = model_type()
+
     model.load_state_dict(state_dict["model"])
     model.eval()
 
-    return model, dataset.classes 
+    return model, dataset.classes, transform
 
 
 if __name__ == "__main__":
@@ -47,7 +59,7 @@ if __name__ == "__main__":
     dataset = datasets.ImageFolder(data_folder, transform=transform)
     print(dataset.class_to_idx)
 
-    model = SmallModel(len(dataset.class_to_idx))
+    model = SmallModel()
 
     state_dict = torch.load("models/SmallModel-Epch:5-Acc:86.pth", weights_only=False)
     # print(f"torch load state_dict: {state_dict}")

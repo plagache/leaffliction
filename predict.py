@@ -17,8 +17,7 @@ def predict(model_path, image_path):
     if not model_path:
         return "No model selected"
     
-    model, classes = prepare_model(model_path)
-    prediction = predict_image(image_path, model, classes)
+    prediction = predict_image(image_path, model_path)
     return prediction
 
 with gr.Blocks() as demo:
