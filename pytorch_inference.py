@@ -6,17 +6,16 @@ from pathlib import Path
 from PIL import Image
 
 def get_model_from_path(model_path):
-    match model_path:
-        case model_path if "AlexNet" in model_path:
-            return AlexNet, T.Compose([
-                T.Resize(227),
-                T.ToTensor(),
-            ])
-        case model_path if "SmallModel" in model_path:
-            return SmallModel, T.Compose([
-                T.Resize(224),
-                T.ToTensor(),
-            ])
+    if "AlexNet" in model_path:
+        return AlexNet(), T.Compose([
+            T.Resize(227),
+            T.ToTensor(),
+        ])
+    if "SmallModel" in model_path:
+        return SmallModel(), T.Compose([
+            T.Resize(224),
+            T.ToTensor(),
+        ])
     return "no model found"
 
 def predict_image(image_path, model_path):
@@ -41,8 +40,7 @@ def prepare_model(model_path):
 
     state_dict = torch.load(model_path, weights_only=False)
     
-    model_type, transform = get_model_from_path(model_path)
-    model = model_type()
+    model, transform = get_model_from_path(model_path)
 
     model.load_state_dict(state_dict["model"])
     model.eval()
