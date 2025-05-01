@@ -1,6 +1,16 @@
 import gradio as gr
 import torch
 from pytorch_inference import predict_image, prepare_model
+from pathlib import Path
+
+def list_models():
+    files: list[Path] = list(Path("models").rglob("*.pth"))
+    models = []
+    for model in files:
+        if Path.is_file(model):
+            name = model.name.split('-')[0]
+            models.append((name, str(model)))
+    return models
 
 def give_image(image_path):
     if image_path:
@@ -28,7 +38,7 @@ with gr.Blocks() as demo:
             image_display = gr.Image(label="Selected Image")
     with gr.Row():
         with gr.Column():
-            model_selector = gr.FileExplorer(root_dir="models", file_count="single")
+            model_selector = gr.Dropdown(choices=list_models(), label="select a model")
             predict_btn = gr.Button(value="Predict")
         with gr.Column():
             prediction = gr.Textbox(label="Prediction")

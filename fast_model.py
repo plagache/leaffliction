@@ -92,7 +92,7 @@ class AlexNet(nn.Module):
 
 
 if __name__ == "__main__":
-    path = Path("images")
+    path = Path("augmented_directory")
 
     dls = DataBlock(
         blocks=(ImageBlock, CategoryBlock),
@@ -131,7 +131,7 @@ if __name__ == "__main__":
     # print(dls.device)
     print(learn.model)
     print(type(learn.model))
-    exit(0)
+    # exit(0)
 
     epoch = 20
     suggested_learning_rate = learn.lr_find()

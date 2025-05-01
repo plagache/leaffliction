@@ -6,12 +6,12 @@ from pathlib import Path
 from PIL import Image
 
 def get_model_from_path(model_path):
-    if "AlexNet" in model_path:
+    if AlexNet.__name__ in model_path:
         return AlexNet(), T.Compose([
             T.Resize(227),
             T.ToTensor(),
         ])
-    if "SmallModel" in model_path:
+    if SmallModel.__name__ in model_path:
         return SmallModel(), T.Compose([
             T.Resize(224),
             T.ToTensor(),
