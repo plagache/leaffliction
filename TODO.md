@@ -24,13 +24,14 @@
     - [ ] implement seed to make train and valid dataset the same each time
 - [ ] Display one item from each category
 - [x] Analyze data distribution
+- [ ] gradio analyse tab (1 row for each existing directories)
 
 ### Data Augmentation
 
 - [x] Implement data augmentation techniques:
     - [x] Rotate (90 degrees).
     - [x] Flip (randomly).
-    - [x] Skew.
+    - [ ] lower Skew quantity.
     - [x] Shear.
     - [x] Crop (random).
         - [x] Add resize after crop to maintain consistent image sizes
@@ -38,6 +39,8 @@
 - [x] Balance dataset
 - [x] Copy Balanced dataset
 - [x] Implement sampling for test and training on augmented dataset
+- [ ] Review which augmentation to keep for training data
+- [ ] gradio tab to pick an image and display augmentation
 
 ### Data Transformation
 
@@ -63,7 +66,8 @@
 - [ ] Simplify training process (optional debug/context/jit with env variable)
 - [ ] Visualize kernel search
 - [ ] Train model on prepared data
-- [ ] Export weights after training
+- [x] Export weights after training
+- [ ] train on splitted dataset (train directory)
 
 
 ### Classification
@@ -79,9 +83,11 @@
 
 ### Predict
 
-- [ ] import model/weights
-- [ ] predict function given an image
-- [ ] display category/categories and image(optionally transformed)
+- [x] import model/weights
+- [x] predict function given an image
+- [x] display category/categories and image(optionally transformed)
+- [x] display confusion matrix
+- [ ] integrate confusion matrix / accuracy with gradio
 
 
 ## Ideas & Questions
