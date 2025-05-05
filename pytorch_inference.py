@@ -22,7 +22,7 @@ def get_model_from_path(model_path):
     return "no model found"
 
 def predict_image(image_path, model_path):
-    model, classes, transform = prepare_model(model_path)
+    model, dataset, transform = prepare_model(model_path)
 
     # load pil image
     image = Image.open(image_path)
@@ -35,17 +35,19 @@ def predict_image(image_path, model_path):
     probabilities = torch.nn.functional.softmax(output[0], dim=0)
     predicted_class = torch.argmax(probabilities).item()
 
-    return f"{classes[predicted_class]}"
+    return f"{dataset.classes[predicted_class]}"
 
 
-def predict_dataset(data_loader, model_path):
-    model, classes, transform = prepare_model(model_path)
+def predict_dataset(model_path):
+    model, dataset, transform = prepare_model(model_path)
+
+    batch_size = 64
+    data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
     labels = []
     predictions = []
 
     with torch.no_grad():
-        # image_batch, label_batch = next(iter(data_loader))
         for image_batch, label_batch in data_loader:
             outputs = model(image_batch)
             probabilities = torch.nn.functional.softmax(outputs, dim=0)
@@ -55,12 +57,10 @@ def predict_dataset(data_loader, model_path):
 
     labels = torch.cat(labels)
     predictions = torch.cat(predictions)
-    return labels, predictions
+    return labels, predictions, dataset.classes
 
 
 def prepare_model(model_path):
-    data_folder = Path("validation")
-    dataset = datasets.ImageFolder(data_folder)
 
     state_dict = torch.load(model_path, weights_only=False)
 
@@ -69,15 +69,19 @@ def prepare_model(model_path):
     model.load_state_dict(state_dict["model"])
     model.eval()
 
-    return model, dataset.classes, transform
+    data_folder = Path("validation")
+    dataset = datasets.ImageFolder(data_folder, transform=transform)
+
+    return model, dataset, transform
 
 
-def model_confusion(y_true, y_prediction, classes):
+def model_confusion(y_true, y_prediction, classes, show=False):
     model_cm = confusion_matrix(y_true, y_prediction)
     print(classes)
     print(f"model confusion matrice:\n{model_cm}")
     display = ConfusionMatrixDisplay(model_cm, display_labels=classes).plot(cmap="Blues", xticks_rotation=45)
-    plt.show()
+    if show is True:
+        plt.show()
     return display.figure_
 
 
@@ -87,28 +91,9 @@ def get_accuracy(y_true, y_prediction):
 
 
 if __name__ == "__main__":
-    transform = T.Compose([
-        T.Resize(224),
-        T.ToTensor(),
-    ])
-    batch_size = 300
-    data_folder = Path("validation")
-    dataset = datasets.ImageFolder(data_folder, transform=transform)
-    data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-    # print(dataset.classes)
-    # print(dataset.class_to_idx)
+    model_path = "models/AlexNet-Epch:20-Acc:91.pth"
 
-    model = SmallModel()
-
-    model_path = "models/SmallModel-Epch:5-Acc:86.pth"
-    state_dict = torch.load("models/SmallModel-Epch:5-Acc:86.pth", weights_only=False)
-    # print(f"torch load state_dict: {state_dict}")
-    # exit(0)
-
-    model.load_state_dict(state_dict["model"])
-    model.eval()
-
-    labels, predictions = predict_dataset(data_loader, model_path)
+    labels, predictions, classes = predict_dataset(model_path)
     la_retourne_a_tourner = get_accuracy(labels, predictions)
     print(la_retourne_a_tourner)
-    model_confusion(labels, predictions, dataset.classes)
+    model_confusion(labels, predictions, classes, show=True)
