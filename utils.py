@@ -10,7 +10,7 @@ from typing import Optional, Self, Union
 
 import cv2
 import numpy as np
-from Augmentor.Operations import CropRandom, Distort, Flip, Resize, Rotate, Shear, Skew
+from Augmentor.Operations import CropRandom, Distort, Flip, Resize, Rotate, Shear, Skew, RandomBrightness, Zoom
 from PIL import Image
 from tinygrad import Device, Tensor
 from tinygrad.dtype import dtypes
@@ -18,13 +18,19 @@ from tinygrad.dtype import dtypes
 
 def get_modified_images(image: Image) -> dict[str, Image]:
     cropped_image = CropRandom(probability=1, percentage_area=0.8).perform_operation([image])[0]
+
     modified_images = {
+        "Intensity": RandomBrightness(probability=1, min_factor=0.7, max_factor=1.3).perform_operation([image])[0],
+        # could rotate 180 degrees
         "Rotate": Rotate(probability=1, rotation=90).perform_operation([image])[0],
         "Flip": Flip(probability=1, top_bottom_left_right="RANDOM").perform_operation([image])[0],
-        "Skew": Skew(probability=1, skew_type="TILT", magnitude=1).perform_operation([image])[0],
-        "Shear": Shear(probability=1, max_shear_left=20, max_shear_right=20).perform_operation([image])[0],
-        "Crop": Resize(probability=1, width=image.width, height=image.height, resample_filter="BICUBIC").perform_operation([cropped_image])[0],
-        "Distortion": Distort(probability=1, grid_width=2, grid_height=2, magnitude=9).perform_operation([image])[0],
+        # "Skew": Skew(probability=1, skew_type="TILT", magnitude=0.5).perform_operation([image])[0],
+        "Shear": Shear(probability=1, max_shear_left=15, max_shear_right=15).perform_operation([image])[0],
+
+        "Zoom": Zoom(probability=1, min_factor=1.05, max_factor=1.15).perform_operation([image])[0],
+        # "Crop": Resize(probability=1, width=image.width, height=image.height, resample_filter="BICUBIC").perform_operation([cropped_image])[0],
+
+        "Distortion": Distort(probability=1, grid_width=4, grid_height=4, magnitude=20).perform_operation([image])[0],
     }
     return modified_images.items()
 
