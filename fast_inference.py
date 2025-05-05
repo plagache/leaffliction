@@ -17,8 +17,8 @@ def predict_image(learner, image_path):
 
 if __name__ == "__main__":
     # load dataloaders with the same seed than training ensuring valid and train set are identical
-    path = Path("images")
-    dls = ImageDataLoaders.from_folder(path, valid_pct=0.2, seed=42, item_tfms=Resize(224))
+    path = Path("validation")
+    dls = ImageDataLoaders.from_folder(path, valid_pct=0.2, seed=42, item_tfms=Resize(227))
 
     # learner = load_learner("resnet18_finetuned.pkl")
     # print(f"eval model: {learner.model.eval()}")
@@ -29,15 +29,16 @@ if __name__ == "__main__":
     # from a pytorch model
     # learner = vision_learner(dls, resnet18, metrics=accuracy).load('resnet18_finetuned')
     # learner.export()
-    state_dict = torch.load('models/weights_only.pth')
+    model_path = "models/AlexNet-Epch:20-Acc:91.pth"
+    state_dict = torch.load(model_path, weights_only=False)
     # state_dict = torch.load('models/resnet18_finetuned.pth', weights_only=False)
     # print(state_dict)
     # model = resnet18()  # Use the same architecture as training
     model = AlexNet()  # Use the same architecture as training
     print(model)
-    model.load_state_dict(state_dict)
+    model.load_state_dict(state_dict["model"])
     print(model)
-    # learner = Learner(dls, model, loss_func=CrossEntropyLossFlat(), metrics=accuracy)
+    learner = Learner(dls, model, loss_func=CrossEntropyLossFlat(), metrics=accuracy)
     # learner = vision_learner(dls, resnet18, metrics=accuracy)
     # learner.load('resnet18_finetuned')
     # safer version
@@ -62,10 +63,23 @@ if __name__ == "__main__":
     # ]
     # print(dls.valid_ds.items)
     # exit(0)
+
+    acc2 = learner.validate(dl=dls)
+    print(acc2)
+    exit(0)
+
+    truesque = 0
+    lenny = 0
     for image_path in dls.valid_ds.items:
         # image_path = Path(image)
+        lenny += 1
         prediction = predict_image(learner, image_path)
+        if prediction in str(image_path):
+            truesque += 1
         print(f"Image: {image_path}, Predicted: {prediction}")
+
+    acc = truesque / lenny * 100
+    print(f"acc = {acc}")
 
     # validation_set = get_image_files(path)
     # test_loader = learner.dls.test_dl(validation_set, with_labels=False)
