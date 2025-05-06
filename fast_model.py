@@ -92,16 +92,7 @@ class AlexNet(nn.Module):
 
 
 if __name__ == "__main__":
-    path = Path("augmented_directory")
-
-    dls = DataBlock(
-        blocks=(ImageBlock, CategoryBlock),
-        get_items=get_image_files,
-        splitter=RandomSplitter(valid_pct=0.2, seed=42),
-        get_y=parent_label,
-        # item_tfms=Resize(227)
-        item_tfms=Resize(224)
-    ).dataloaders(path)
+    dls = ImageDataLoaders.from_folder(".", train="train", valid="validation", item_tfms=Resize(227))
     # dls.show_batch(max_n=6)
 
     total_items = len(dls.train_ds)
@@ -110,19 +101,17 @@ if __name__ == "__main__":
     print(f"number of items: {total_items}, batch_size: {batch_size}, number of batches: {total_batches}")
     print(dls.vocab)
     print(dls.vocab.o2i)
-    # print(dls.train.items)
-    # print(dls.train_ds.items)
-    # exit(0)
+    print(dls.after_item, dls.after_batch)
     # 40k images is not optimal for training
 
 
     opt_func = partial(OptimWrapper, opt=optim.Adam)
 
-    # model = AlexNet()
+    model = AlexNet()
     # print(model)
     # print(type(model))
 
-    model = SmallModel()
+    # model = SmallModel()
     criterion = nn.CrossEntropyLoss()
     learn = Learner(dls, model, loss_func=criterion, opt_func=opt_func, metrics=accuracy)
 
@@ -131,9 +120,8 @@ if __name__ == "__main__":
     # print(dls.device)
     print(learn.model)
     print(type(learn.model))
-    # exit(0)
 
-    epoch = 20
+    epoch = 10
     suggested_learning_rate = learn.lr_find()
     optimal_lr = suggested_learning_rate.valley
     print(f"\nOptimal learning rate: {optimal_lr}\n")

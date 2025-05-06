@@ -32,7 +32,7 @@ def predict_image(image_path, model_path):
     # apply model
     with torch.no_grad():
         output = model(image_tensor)
-    probabilities = torch.nn.functional.softmax(output[0], dim=0)
+    probabilities = torch.nn.functional.softmax(output[0], dim=-1)
     predicted_class = torch.argmax(probabilities).item()
 
     return f"{dataset.classes[predicted_class]}"
@@ -50,8 +50,8 @@ def predict_dataset(model_path):
     with torch.no_grad():
         for image_batch, label_batch in data_loader:
             outputs = model(image_batch)
-            probabilities = torch.nn.functional.softmax(outputs, dim=0)
-            predicted_class = torch.argmax(probabilities, dim=1)
+            probabilities = torch.nn.functional.softmax(outputs, dim=-1)
+            predicted_class = torch.argmax(probabilities, dim=-1)
             labels.append(label_batch)
             predictions.append(predicted_class)
 

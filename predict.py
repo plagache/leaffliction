@@ -63,8 +63,8 @@ with gr.Blocks() as demo:
                 validation_btn = gr.Button(value="Valid")
             with gr.Column():
                 validation = gr.Textbox(label="Validation")
-        with gr.Row():
-            confusion = gr.Plot(label="Confusion Matrix")
+        # with gr.Row():
+        confusion = gr.Plot(label="Confusion Matrix")
 
         validation_btn.click(fn=asdf, inputs=valid_model_selector, outputs=[validation, confusion])
         valid_model_selector.change(inputs=valid_model_selector)

@@ -29,7 +29,7 @@ if __name__ == "__main__":
     # from a pytorch model
     # learner = vision_learner(dls, resnet18, metrics=accuracy).load('resnet18_finetuned')
     # learner.export()
-    model_path = "models/AlexNet-Epch:20-Acc:91.pth"
+    model_path = "models/AlexNet-Epch:10-Acc:94.pth"
     state_dict = torch.load(model_path, weights_only=False)
     # state_dict = torch.load('models/resnet18_finetuned.pth', weights_only=False)
     # print(state_dict)
@@ -64,9 +64,9 @@ if __name__ == "__main__":
     # print(dls.valid_ds.items)
     # exit(0)
 
-    acc2 = learner.validate(dl=dls)
-    print(acc2)
-    exit(0)
+    # acc2 = learner.validate(dl=dls)
+    # print(acc2)
+    # exit(0)
 
     truesque = 0
     lenny = 0
