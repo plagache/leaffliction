@@ -77,7 +77,6 @@ def prepare_model(model_path):
 
 def model_confusion(y_true, y_prediction, classes, show=False):
     model_cm = confusion_matrix(y_true, y_prediction)
-    print(classes)
     print(f"model confusion matrice:\n{model_cm}")
     display = ConfusionMatrixDisplay(model_cm, display_labels=classes).plot(cmap="Blues", xticks_rotation=45)
     if show is True:
@@ -86,14 +85,12 @@ def model_confusion(y_true, y_prediction, classes, show=False):
 
 
 def get_accuracy(y_true, y_prediction):
-    accuracy = (y_prediction == y_true).sum()
-    return f"valid: {accuracy * 100 / len(y_true):.2f}%\ndataset len: {len(y_true)}"
-
+    return (y_prediction == y_true).sum() / len(y_true)
 
 if __name__ == "__main__":
     model_path = "models/AlexNet-Epch:20-Acc:91.pth"
 
     labels, predictions, classes = predict_dataset(model_path)
     la_retourne_a_tourner = get_accuracy(labels, predictions)
-    print(la_retourne_a_tourner)
+    print(f"accuracy of {la_retourne_a_tourner * 100:.2f}% on {len(labels)} items")
     model_confusion(labels, predictions, classes, show=True)
