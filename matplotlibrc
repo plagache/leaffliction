@@ -1,0 +1,3 @@
+backend: webagg
+webagg.port: 5656
+webagg.address: 0.0.0.0
