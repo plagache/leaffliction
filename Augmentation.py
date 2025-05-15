@@ -1,7 +1,6 @@
 import argparse
 from pathlib import Path
 
-import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 from PIL import Image
 
@@ -10,22 +9,21 @@ from utils import DatasetFolder, get_modified_image_name, get_modified_images
 
 def modify_image(image_path: Path, images_to_show: list) -> None:
     image = Image.open(image_path)
-    images_to_show.append(("original", image_path))
+    images_to_show.append(("original", image))
     for modification, modified_image in get_modified_images(image):
         output_path: str = get_modified_image_name(modification, image_path)
-        images_to_show.append((modification, output_path))
+        images_to_show.append((modification, modified_image))
         modified_image.save(output_path)
 
 
-def display_images(images_with_titles: tuple[str, str]) -> None:
+def display_images(title: str, images_with_titles: list[tuple]) -> None:
     plt.style.use("dark_background")
     rows = 1
     cols = len(images_with_titles)
     fig, axes = plt.subplots(rows, cols, figsize=(19.2, 10.8))
-    fig.suptitle("augmentation", fontsize=16, fontweight="bold")
+    fig.suptitle(title, fontsize=16, fontweight="bold")
 
-    for i, (title, path) in enumerate(images_with_titles):
-        img = mpimg.imread(path)
+    for i, (title, img) in enumerate(images_with_titles):
         axes[i].imshow(img)
         axes[i].axis("off")
 
@@ -33,7 +31,6 @@ def display_images(images_with_titles: tuple[str, str]) -> None:
 
     plt.tight_layout()
     plt.subplots_adjust(top=0.88)
-    plt.savefig(f"augmented images of {images_with_titles[1][1].split('/')[-1]}")
     plt.show()
 
 
@@ -51,7 +48,7 @@ if __name__ == "__main__":
     if given_path.is_file():
         images_to_show: list[tuple[str, str]] = []
         modify_image(given_path, images_to_show)
-        display_images(images_to_show)
+        display_images("augmentation", images_to_show)
         exit(0)
 
     elif given_path.is_dir():
