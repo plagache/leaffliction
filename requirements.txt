@@ -1,6 +1,6 @@
 # Updating this file and make will update the environement
-matplotlib
-PyQt6           # lib graphic
+matplotlib      # used in concurance with the matplotlibrc to use webagg
+# PyQt6           # lib graphic # no need cause we use webagg with matplotlib
 flake8          # norme
 Augmentor       # image augmentation library 589M 20 packages
 numpy
