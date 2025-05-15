@@ -5,9 +5,10 @@ import numpy as np
 from plantcv import plantcv as pcv
 from PIL import Image
 # from tinygrad import Tensor, nn
+from pathlib import Path
 
-import matplotlib.pyplot as plt
 from utils import DatasetFolder, Dataloader
+from Augmentation import display_images
 
 
 def gaussian_blur(numpy_image):
@@ -19,7 +20,7 @@ def gaussian_blur(numpy_image):
 
     # opencv_image.show()
     # plantcv_image.show()
-    return
+    return plantcv_gaussian_blur
 
 
 def canny_edge_detection(numpy_array):
@@ -33,7 +34,7 @@ def canny_edge_detection(numpy_array):
     # edge_image = Image.fromarray(edge)
     # other_edge_image.show()
     # edge_image.show()
-    return
+    return pcv_edge
 
 
 def segmentation(numpy_array, img):
@@ -61,6 +62,56 @@ def segmentation(numpy_array, img):
 
     return
 
+def transform_image(image_path, show=False):
+    pil_image = Image.open(image_path)
+    # pil_image.show()
+
+    numpy_image = np.asarray(pil_image)
+    cv_image = cv.imread(image_path)
+
+    # make a tuple of image with their name
+    gaussian_image = gaussian_blur(numpy_image)
+    canny_image = canny_edge_detection(gaussian_image)
+    # canny_image = canny_edge_detection(numpy_image)
+    segmentation(numpy_image, cv_image)
+
+    transformed_images = [
+        ("gaussian_blur", gaussian_image),
+        ("canny_edge_detection", canny_image)
+    ]
+
+    if show is True:
+        display_images("transformation", transformed_images)
+    return transformed_images
+
+def save_transformed(source, image_path, images_with_titles: list[tuple], destination):
+    the_end = [part for part in image_path.parts if part not in source.parts]
+    new_path = destination / Path(*the_end)
+
+    if new_path.parent.exists() is False:
+        new_path.parent.mkdir(parents=True, exist_ok=True)
+
+    for transformation, transformed_image in images_with_titles:
+        split_image_name = str(new_path).split(".")
+        split_image_name[0] = f"{split_image_name[0]}_{transformation}"
+        transformed_filename = ".".join(split_image_name)
+
+        cv.imwrite(transformed_filename, transformed_image)
+    return
+
+def transform_dataset(source, destination):
+    dataset = DatasetFolder(source)
+
+    # dataloader = Dataloader(dataset, batch_size=2, shuffle=True)
+    #
+    # for toto in dataloader:
+    #     print(toto)
+    # exit(0)
+
+    for image_path, class_index in dataset:
+        transformed_images = transform_image(image_path)
+        save_transformed(source, image_path, transformed_images, destination)
+    return
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="testing the Transformation of open CV class")
@@ -72,40 +123,13 @@ if __name__ == "__main__":
 
     if args.filename and not (args.src or args.dst):
         print(f"Processing file: {args.filename}")
-        pcv.params.debug = "plot"
+        # pcv.params.debug = "plot"
+        transform_image(args.filename, show=True)
     elif args.src and args.dst and not args.filename:
         print(f"Reading from source: {args.src} and write to destination: {args.dst}")
-        pcv.params.debug = "print"
-        pcv.params.debug_outdir = f"{args.dst}"
+        # pcv.params.debug = "print"
+        # pcv.params.debug_outdir = f"{args.dst}"
+        transform_dataset(Path(args.src), Path(args.dst))
     else:
         parser.error("You must provide either a filename or both -src and -dst options.")
         parser.print_help()
-
-    dataset = DatasetFolder(args.src)
-
-    dataloader = Dataloader(dataset, batch_size=1, shuffle=True)
-
-    # THIS WILL BE A TEST CASE IN TEST_UTILS.PY
-    # one_batch = next(iter(dataloader))
-    # # print(dataloader.indices)
-    # print(one_batch)
-    #
-    # dataloader.shuffle = False
-    #
-    one_batch = next(iter(dataloader))
-    # print(dataloader.indices)
-    # print(one_batch)
-    # print(type(one_batch))
-    for path, class_index in one_batch:
-        # print(path)
-        # print(class_index)
-
-        pil_image = Image.open(path)
-        # pil_image.show()
-
-        numpy_image = np.asarray(pil_image)
-        cv_image = cv.imread(path)
-
-        gaussian_blur(numpy_image)
-        canny_edge_detection(numpy_image)
-        segmentation(numpy_image, cv_image)
