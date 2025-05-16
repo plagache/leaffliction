@@ -10,3 +10,5 @@ leaves.zip
 Session.vim
 debug/
 *.safetensor
+*.tar.gz
+*.zip
