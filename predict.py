@@ -11,6 +11,7 @@ import argparse
 from Transformation import transform_image
 from Augmentation import display_images
 from tqdm import tqdm
+import json
 
 def get_model_from_path(model_path):
     if AlexNet.__name__ in model_path:
@@ -26,7 +27,7 @@ def get_model_from_path(model_path):
     return "no model found"
 
 def predict_image(image_path, model_path):
-    model, dataset, transform = prepare_model(model_path)
+    model, transform, classes = prepare_model(model_path)
 
     # load pil image
     image = Image.open(image_path)
@@ -39,12 +40,14 @@ def predict_image(image_path, model_path):
     probabilities = torch.nn.functional.softmax(output[0], dim=-1)
     predicted_class = torch.argmax(probabilities).item()
 
-    return f"{dataset.classes[predicted_class]}"
+    return f"{classes[predicted_class]}"
 
 
 def predict_dataset(model_path):
-    model, dataset, transform = prepare_model(model_path)
+    model, transform, classes = prepare_model(model_path)
 
+    data_folder = Path("validation")
+    dataset = datasets.ImageFolder(data_folder, transform=transform)
     batch_size = 64
     data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
@@ -73,10 +76,15 @@ def prepare_model(model_path):
     model.load_state_dict(state_dict["model"])
     model.eval()
 
-    data_folder = Path("validation")
-    dataset = datasets.ImageFolder(data_folder, transform=transform)
+    classes_outfile = Path("models/classes.json")
+    if classes_outfile.is_file():
+        with open(classes_outfile, 'r') as f:
+            classes = json.load(f)
+    else:
+        print(f"{classes_outfile} not detected")
+        exit(0)
 
-    return model, dataset, transform
+    return model, transform, classes
 
 
 def model_confusion(y_true, y_prediction, classes, show=False):

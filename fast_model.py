@@ -5,6 +5,7 @@ from fastai.optimizer import OptimWrapper
 from torch import optim
 import torch.nn as nn
 import torch.nn.functional as F
+import json
 
 def predict_image(learner, image_path):
     test_dl = learner.dls.test_dl([image_path], with_labels=False)
@@ -138,6 +139,21 @@ if __name__ == "__main__":
 
     model_name = f"{model.__class__.__name__}-Epch:{epoch}-Acc:{results[1]*100:.0f}"
     print(f"model name for saving: {model_name}")
+
+    
+    classes_outfile = Path("models/classes.json")
+    classes = list(dls.vocab)
+    if classes_outfile.is_file():
+        with open(classes_outfile, 'r') as f:
+            loaded_classes = json.load(f)
+            if classes != loaded_classes:
+                classes_outfile = f"models/{model_name}-classes.json"
+                print(f"json file differs from current classes saving in {classes_outfile}")
+                with open(classes_outfile, 'w') as f:
+                    json.dump(classes, f)
+    else:
+        with open(classes_outfile, 'w') as f:
+            json.dump(classes, f)
 
     learn.save(model_name)
     # learn.export("resnet18_finetuned.pkl")
