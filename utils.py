@@ -14,6 +14,7 @@ from Augmentor.Operations import CropRandom, Distort, Flip, Resize, Rotate, Shea
 from PIL import Image
 from tinygrad import Device, Tensor
 from tinygrad.dtype import dtypes
+from tqdm import tqdm
 
 
 def get_modified_images(image: Image) -> dict[str, Image]:
@@ -134,7 +135,7 @@ class DatasetFolder:
             print(f"augmenting images for category: {name}")
 
             augmented_images = []
-            for index in indices:
+            for index in tqdm(indices):
                 file_pathname: Path = self.samples[index]
                 image: Image = self.images[index]
 

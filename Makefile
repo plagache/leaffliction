@@ -83,16 +83,16 @@ get_dataset:
 
 distribution:
 	${PYTHON} Distribution.py images
-	${PYTHON} Distribution.py augmented_directory
+	# ${PYTHON} Distribution.py augmented_directory
 	# ${PYTHON} Distribution.py images/Apple
 	# ${PYTHON} Distribution.py images/Grape
 
 augmentation:
-	${PYTHON} Augmentation.py "images/Apple_healthy/image (42).JPG"
+	# ${PYTHON} Augmentation.py "images/Apple_healthy/image (42).JPG"
 	# ${PYTHON} Augmentation.py "images/Apple_healthy/image (9).JPG"
 	# ${PYTHON} Augmentation.py images/Apple_healthy
 	# ${PYTHON} Augmentation.py images/Apple
-	# ${PYTHON} Augmentation.py images
+	${PYTHON} Augmentation.py images
 
 transformation: debug_directory
 	# ${PYTHON} Transformation.py -src images -dst debug
@@ -137,8 +137,11 @@ reaugmentation: clean extract augmentation
 test:
 	${PYTHON} test_utils.py -v
 
+gradio:
+	${BIN}/gradio web_interface.py
+
 predict:
-	${BIN}/gradio predict.py
+	${PYTHON} predict.py
 
 clean:
 	rm -rf debug*
