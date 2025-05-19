@@ -1,5 +1,5 @@
 import gradio as gr
-from pytorch_inference import predict_image, predict_dataset, get_accuracy, model_confusion
+from predict import predict_image, predict_dataset, get_accuracy, model_confusion
 from pathlib import Path
 
 

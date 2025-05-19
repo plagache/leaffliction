@@ -141,7 +141,8 @@ gradio:
 	${BIN}/gradio web_interface.py
 
 predict:
-	${PYTHON} predict.py
+	# ${PYTHON} predict.py
+	${PYTHON} predict.py "images/Grape_Black_rot/image (1).JPG"
 
 clean:
 	rm -rf debug*

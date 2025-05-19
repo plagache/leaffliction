@@ -7,6 +7,10 @@ from pathlib import Path
 from PIL import Image
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
+import argparse
+from Transformation import transform_image
+from Augmentation import display_images
+from tqdm import tqdm
 
 def get_model_from_path(model_path):
     if AlexNet.__name__ in model_path:
@@ -48,7 +52,7 @@ def predict_dataset(model_path):
     predictions = []
 
     with torch.no_grad():
-        for image_batch, label_batch in data_loader:
+        for image_batch, label_batch in tqdm(data_loader):
             outputs = model(image_batch)
             probabilities = torch.nn.functional.softmax(outputs, dim=-1)
             predicted_class = torch.argmax(probabilities, dim=-1)
@@ -88,9 +92,24 @@ def get_accuracy(y_true, y_prediction):
     return (y_prediction == y_true).sum() / len(y_true)
 
 if __name__ == "__main__":
-    model_path = "models/AlexNet-Epch:20-Acc:91.pth"
+    parser = argparse.ArgumentParser(description="Predict")
+    parser.add_argument("filename", help="a single image to predict", nargs="?", default=None)
+    args = parser.parse_args()
 
-    labels, predictions, classes = predict_dataset(model_path)
-    la_retourne_a_tourner = get_accuracy(labels, predictions)
-    print(f"accuracy of {la_retourne_a_tourner * 100:.2f}% on {len(labels)} items")
-    model_confusion(labels, predictions, classes, show=True)
+    model_path = "models/AlexNet-Epch:10-Acc:94.pth"
+    if args.filename is None:
+        labels, predictions, classes = predict_dataset(model_path)
+        la_retourne_a_tourner = get_accuracy(labels, predictions)
+        print(f"accuracy of {la_retourne_a_tourner * 100:.2f}% on {len(labels)} items")
+        model_confusion(labels, predictions, classes, show=True)
+        exit(0)
+
+    file = Path(args.filename)
+    if file.is_file() is True:
+        predicted_class = predict_image(file, model_path)
+        transformed_images = transform_image(file)
+        transformed_images = [item for item in transformed_images if "masked" in item[0] or "original" in item[0]]
+        display_images(f"Class predicted: {predicted_class}", transformed_images)
+    else:
+        parser.error("file provided doesn't exist")
+        parser.print_help()
