@@ -88,19 +88,25 @@ distribution:
 	# ${PYTHON} Distribution.py images/Grape
 
 augmentation:
+	${PYTHON} Augmentation.py "images/Apple_healthy/image (42).JPG"
 	# ${PYTHON} Augmentation.py "images/Apple_healthy/image (9).JPG"
 	# ${PYTHON} Augmentation.py images/Apple_healthy
 	# ${PYTHON} Augmentation.py images/Apple
-	${PYTHON} Augmentation.py images
+	# ${PYTHON} Augmentation.py images
 
 transformation: debug_directory
-	${PYTHON} Transformation.py -src images/Apple_Black_rot -dst debug
-	# ${PYTHON} Transformation.py "images/Apple/Apple_healthy/image (9).JPG"
+	# ${PYTHON} Transformation.py -src images -dst debug
+	# ${PYTHON} Transformation.py -src images/Apple_Black_rot -dst debug
+	${PYTHON} Transformation.py "images/Grape_Black_rot/image (1).JPG"
+	# ${PYTHON} Transformation.py "images/Grape_Black_rot/image (9).JPG"
+	# ${PYTHON} Transformation.py "images/Apple_Black_rot/image (33).JPG"
+	# ${PYTHON} Transformation.py "images/Grape_Black_rot/image (33).JPG"
+	# ${PYTHON} Transformation.py "images/Apple_healthy/image (9).JPG"
 	# These usages are incorrect and should throw error
 	# ${PYTHON} Transformation.py -src images -dst
 	# ${PYTHON} Transformation.py -src -dst debug
 	# ${PYTHON} Transformation.py -src images -dst debug "images/Apple/Apple_healthy/image (9).JPG"
-	# ${PYTHON} Transformation.py debug "images/Apple/Apple_healthy/image (9).JPG"
+	# ${PYTHON} Transformation.py debug "images/Apple_healthy/image (9).JPG"
 
 sample: augmentation
 	${PYTHON} sample.py augmented_directory

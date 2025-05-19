@@ -6,10 +6,29 @@ from plantcv import plantcv as pcv
 from PIL import Image
 # from tinygrad import Tensor, nn
 from pathlib import Path
+from tqdm import tqdm
 
 from utils import DatasetFolder, Dataloader
 from Augmentation import display_images
 
+def apply_gaussian(img_path):
+    image = cv.imread(img_path)
+    gaussian_3_3 = (1 / 16) * np.array([[1, 2, 1], [2, 4, 2], [1, 2, 1]])
+    output = cv.filter2D(image, -1, gaussian_3_3)
+    # gaussian_5_5 = (1 / 159) * np.array([[2, 4, 5, 4, 2], [4, 9, 12, 9, 4], [5, 12, 15, 12, 5], [4, 9, 12, 9, 4], [2, 4, 5, 4, 2]])
+    # output = cv2.filter2D(image, -1, gaussian_5_5)
+    return output
+
+
+def apply_vertical(img):
+    sobel_x_kernel = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
+    output = cv.filter2D(img, -1, sobel_x_kernel)
+    return output
+
+def apply_horizontal(img):
+    sobel_x_kernel = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]])
+    output = cv.filter2D(img, -1, sobel_x_kernel)
+    return output
 
 def gaussian_blur(numpy_image):
     # opencv_gaussian_blur = cv.GaussianBlur(numpy_image, (5, 5), 0)
@@ -36,13 +55,16 @@ def canny_edge_detection(numpy_array):
     # edge_image.show()
     return pcv_edge
 
-
 def segmentation(numpy_array, img):
     # analyse the colorspaces
     colorspace_img = pcv.visualize.colorspaces(rgb_img=numpy_array, original_img=False)
+    s = pcv.rgb2gray_hsv(rgb_img=img, channel='s')
+    b = pcv.rgb2gray_lab(rgb_img=img, channel='b')
+    a = pcv.rgb2gray_lab(rgb_img=img, channel='a')
     # choose a channel that correctly separate background and the leaf
-    grayscale_img = pcv.rgb2gray_hsv(rgb_img=numpy_array, channel="s")
-    # grayscale_img = pcv.rgb2gray_lab(rgb_img=numpy_array, channel="a")
+    # grayscale_img = pcv.rgb2gray_hsv(rgb_img=img, channel="s")
+
+    grayscale_img = pcv.rgb2gray_lab(rgb_img=numpy_array, channel="a")
     # plot the histogram of the grayscale values
     # hist = pcv.visualize.histogram(img=grayscale_img, bins=30)
     # plt.figure()
@@ -52,15 +74,52 @@ def segmentation(numpy_array, img):
     # plt.ylabel('Frequency')
     # plt.show()
     # set_thresh = pcv.threshold.binary(gray_img=grayscale_img, threshold=80, object_type="light")
-    auto_thresh = pcv.threshold.otsu(gray_img=grayscale_img, object_type="light")
+    otsu = pcv.threshold.otsu(gray_img=grayscale_img, object_type="light")
+    blury = pcv.median_blur(gray_img=otsu, ksize=5)
     # auto_thresh, _ = pcv.threshold.custom_range(img=img, lower_thresh=[40, 50, 0], upper_thresh=[75, 95, 35], channel="rgb")
-    fill_image = pcv.fill_holes(bin_img=auto_thresh)
+    fill_image = pcv.fill_holes(bin_img=otsu)
     roi = pcv.roi.circle(fill_image, x=125, y=125, r=100)
     kept_mask = pcv.roi.filter(mask=fill_image, roi=roi, roi_type="partial")
     analysis_image = pcv.analyze.size(img=img, labeled_mask=kept_mask)
     # analysis_color = pcv.analyze.color(rgb_img=img, labeled_mask=kept_mask, colorspaces="rgb")
 
-    return
+    return s, b, a, grayscale_img, otsu, blury, fill_image, roi, kept_mask
+
+def segmenting_plant(numpy_array):
+    # lab color space: luminosity, Red/Green, Yellow/Blue
+    a_channel = pcv.rgb2gray_lab(rgb_img=numpy_array, channel='a')
+    # median blur use the median: remove salt and paper
+    median_img = pcv.median_blur(gray_img=a_channel, ksize=11)
+    otsu = pcv.threshold.otsu(gray_img=median_img, object_type="dark")
+    # gaussian blur calculate the mean of neighbor: produce smooth and soft edges
+    gaussian_img = pcv.gaussian_blur(img=otsu, ksize=(5, 5), sigma_x=0, sigma_y=None)
+    leaf_mask = pcv.fill_holes(bin_img=otsu)
+    masked = pcv.apply_mask(img=numpy_array, mask=leaf_mask, mask_color='white')
+    return a_channel, median_img, otsu, gaussian_img, leaf_mask, masked
+
+def segmenting_background(numpy_array):
+    # lab color space: luminosity, Red/Green, Yellow/Blue
+    b_channel = pcv.rgb2gray_lab(rgb_img=numpy_array, channel='b')
+    # median blur use the median: remove salt and paper
+    median_img = pcv.median_blur(gray_img=b_channel, ksize=11)
+    otsu = pcv.threshold.otsu(gray_img=median_img, object_type="light")
+    # gaussian blur calculate the mean of neighbor: produce smooth and soft edges
+    # cannot use gaussian as a binary since it create gray point
+    gaussian_img = pcv.gaussian_blur(img=otsu, ksize=(5, 5), sigma_x=0, sigma_y=None)
+    leaf_mask = pcv.fill_holes(bin_img=otsu)
+    masked = pcv.apply_mask(img=numpy_array, mask=leaf_mask, mask_color='white')
+    return b_channel, median_img, otsu, gaussian_img, leaf_mask, masked
+
+def segmenting_saturation(numpy_array):
+    s_channel = pcv.rgb2gray_hsv(rgb_img=numpy_array, channel="s")
+    # median blur use the median: remove salt and paper
+    median_img = pcv.median_blur(gray_img=s_channel, ksize=11)
+    otsu = pcv.threshold.otsu(gray_img=median_img, object_type="light")
+    # gaussian blur calculate the mean of neighbor: produce smooth and soft edges
+    gaussian_img = pcv.gaussian_blur(img=otsu, ksize=(5, 5), sigma_x=0, sigma_y=None)
+    leaf_mask = pcv.fill_holes(bin_img=otsu)
+    masked = pcv.apply_mask(img=numpy_array, mask=leaf_mask, mask_color='white')
+    return s_channel, median_img, otsu, gaussian_img, leaf_mask, masked
 
 def transform_image(image_path, show=False):
     pil_image = Image.open(image_path)
@@ -70,14 +129,41 @@ def transform_image(image_path, show=False):
     cv_image = cv.imread(image_path)
 
     # make a tuple of image with their name
-    gaussian_image = gaussian_blur(numpy_image)
-    canny_image = canny_edge_detection(gaussian_image)
+    # gaussian_image = gaussian_blur(numpy_image)
+    # canny_image = canny_edge_detection(gaussian_image)
     # canny_image = canny_edge_detection(numpy_image)
-    segmentation(numpy_image, cv_image)
+    # s, b, a, grayscale_img, otsu, blury, fill_image, roi, kept_mask = segmentation(numpy_image, cv_image)
+    a_channel, median_img, otsu, gaussian_img, leaf_mask_a, masked = segmenting_plant(numpy_image)
+    b_channel, median_img, otsu, gaussian_img, leaf_mask_b, masked = segmenting_background(numpy_image)
+    s_channel, median_img, otsu, gaussian_img, leaf_mask_s, masked = segmenting_saturation(numpy_image)
+
+    leaf_mask_c = pcv.logical_or(bin_img1=leaf_mask_a, bin_img2=leaf_mask_b)
+    leaf_mask_d = pcv.logical_or(bin_img1=leaf_mask_s, bin_img2=leaf_mask_b)
+    leaf_mask_z = pcv.logical_or(bin_img1=leaf_mask_c, bin_img2=leaf_mask_d)
+    # masked = pcv.apply_mask(img=numpy_image, mask=leaf_mask_c, mask_color='white')
+    masked = pcv.apply_mask(img=numpy_image, mask=leaf_mask_z, mask_color='white')
+    # roi = pcv.roi.circle(img=masked, x=125, y=125, r=100)
+    # filtered_mask = pcv.roi.filter(mask=leaf_mask_z, roi=roi, roi_type='partial')
+    analysis_image = pcv.analyze.size(img=numpy_image, labeled_mask=leaf_mask_z)
 
     transformed_images = [
-        ("gaussian_blur", gaussian_image),
-        ("canny_edge_detection", canny_image)
+        ("original: pil, numpy", numpy_image),
+        ("s channel", s_channel),
+        ("b channel", b_channel),
+        ("a channel", a_channel),
+        # ("median blur", median_img),
+        # ("canny_edge_detection", canny_image),
+        # ("otsu", otsu),
+        # ("gaussian_img", gaussian_img),
+        # ("leaf mask b", leaf_mask_b),
+        # ("leaf mask a", leaf_mask_a),
+        ("leaf mask c", leaf_mask_c),
+        ("leaf mask d", leaf_mask_d),
+        ("leaf mask z", leaf_mask_z),
+        ("leaf masked", masked),
+        # ("roi", roi),
+        # ("filtered mask", filtered_mask),
+        ("analysis image", analysis_image),
     ]
 
     if show is True:
@@ -102,13 +188,7 @@ def save_transformed(source, image_path, images_with_titles: list[tuple], destin
 def transform_dataset(source, destination):
     dataset = DatasetFolder(source)
 
-    # dataloader = Dataloader(dataset, batch_size=2, shuffle=True)
-    #
-    # for toto in dataloader:
-    #     print(toto)
-    # exit(0)
-
-    for image_path, class_index in dataset:
+    for image_path, class_index in tqdm(dataset):
         transformed_images = transform_image(image_path)
         save_transformed(source, image_path, transformed_images, destination)
     return
