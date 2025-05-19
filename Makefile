@@ -112,19 +112,23 @@ sample: augmentation
 	${PYTHON} sample.py augmented_directory
 
 train:
-	${PYTHON} train_.py train validation
+	${PYTHON} train.py
+
+predict:
+	# ${PYTHON} predict.py
+	${PYTHON} predict.py "images/Grape_Black_rot/image (1).JPG"
+
+gradio:
+	${BIN}/gradio web_interface.py
 
 viz:
-	VIZ=1 ${PYTHON} train.py train validation
+	VIZ=1 ${PYTHON} train_.py train validation
 
 resnet:
 	${PYTHON} resnet.py
 
 alexnet:
 	${PYTHON} alex_torch.py
-
-fast:
-	${PYTHON} fast_model.py
 
 fast_inference:
 	${PYTHON} fast_inference.py
@@ -136,13 +140,6 @@ reaugmentation: clean extract augmentation
 
 test:
 	${PYTHON} test_utils.py -v
-
-gradio:
-	${BIN}/gradio web_interface.py
-
-predict:
-	# ${PYTHON} predict.py
-	${PYTHON} predict.py "images/Grape_Black_rot/image (1).JPG"
 
 clean:
 	rm -rf debug*

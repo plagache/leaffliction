@@ -1,115 +1,159 @@
-import argparse
-import timeit
+from fastai.data.all import *
+from fastai.vision.all import *
+from fastai.learner import Learner
+from fastai.optimizer import OptimWrapper
+from torch import optim
+import torch.nn as nn
+import torch.nn.functional as F
+import json
 
-from tinygrad import Context, Device, GlobalCounters, Tensor, TinyJit, nn
-from tinygrad.nn.datasets import mnist
-from resnet import ResNet
+def predict_image(learner, image_path):
+    test_dl = learner.dls.test_dl([image_path], with_labels=False)
 
-from resnet import ResNet
+    preds, _ = learner.get_preds(dl=test_dl)
+    pred_class = preds.argmax(dim=1).item()
 
-from utils import DatasetFolder, Dataloader
-import numpy as np
+    return learner.dls.vocab[pred_class]
 
-# watch -n0.1 nvidia-smi
+def verification(dls):
+    for i in range(100):
+        image, label = dls.train_ds[i]
+        # print(image, label)
+        label_name = dls.vocab[label]
+        print(f"Decoded label: {label_name}, Encoded label: {label}")
+        pil_image = PILImage.create(image)
 
-# gcc13-13.3.0-1  gcc13-libs-13.3.0-1  opencl-nvidia-565.57.01-1  cuda-12.6.2-2
+        pred_class, pred_idx, outputs = learn.predict(pil_image)
+        print(f"Predicted class: {pred_class}, Actual label: {label}")
 
-print(Device.DEFAULT)
+class SmallModel(nn.Module):
+    def __init__(self):
+        super(SmallModel, self).__init__()
+        self.features = nn.Sequential(
+            nn.Conv2d(3, 32, kernel_size=(3, 3)),
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2),
+            nn.Conv2d(32, 64, kernel_size=(3, 3)),
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2),
+        )
+        self.classifier = nn.Sequential(
+            nn.Flatten(1),
+            nn.Dropout(0.5),
+            nn.Linear(64 * 54 * 54, 8)
+        )
 
-class BigModel:
-    def __init__(self, num_classes):
-        self.l1 = nn.Conv2d(3, 64, kernel_size=(3, 3), stride=1)
-        self.l2 = nn.Conv2d(64, 128, kernel_size=(3, 3), stride=1)
-        self.l3 = nn.Conv2d(128, 256, kernel_size=(1, 1), stride=1)
-        self.l4 = nn.Linear(20736, num_classes)
-
-    def __call__(self, x: Tensor) -> Tensor:
-        x = self.l1(x).relu().max_pool2d((3, 3))
-        x = self.l2(x).relu().max_pool2d((3, 3))
-        x = self.l3(x).relu().max_pool2d((3, 3))
-        x = x.flatten(1).dropout(0.5)
-        # print(x.shape)
-        return self.l4(x)
-
-class SmallModel:
-  def __init__(self, num_of_classes):
-    self.l1 = nn.Conv2d(3, 32, kernel_size=(3,3))
-    self.l2 = nn.Conv2d(32, 64, kernel_size=(3,3))
-    self.l3 = nn.Linear(64 * 62 * 62, num_of_classes)
-
-  def __call__(self, x:Tensor) -> Tensor:
-    x = self.l1(x).relu().max_pool2d((2,2))
-    x = self.l2(x).relu().max_pool2d((2,2))
-    return self.l3(x.flatten(1).dropout(0.5))
-
-
-parser = argparse.ArgumentParser(description="Train our model on a dataset from a train and test directory")
-parser.add_argument("train_directory", help="the train set directory to parse")
-parser.add_argument("test_directory", help="the validation set directory to parse")
-args = parser.parse_args()
-
-train_folder: DatasetFolder = DatasetFolder(args.train_directory)
-test_folder: DatasetFolder = DatasetFolder(args.test_directory)
-# print(folder.mapped_dictionnary)
-# print(folder.count_dictionnary)
-# print(folder.indices_dictionnary)
-loader: Dataloader = Dataloader(train_folder, 1000)
-test_loader: Dataloader = Dataloader(test_folder, 100, shuffle=True)
-X_train, Y_train = loader.get_tensor()
-X_test, Y_test = test_loader.get_tensor()
-# with np.printoptions(threshold=np.inf):
-#     print(Y_test.numpy())
-samples = Tensor.randint(10, high=X_test.shape[0])
-X_test, Y_test = X_test[samples], Y_test[samples]
-# X_test, Y_test = X_test[:100], Y_test[:100]
-print(Y_test.numpy())
-print(X_test.shape, X_test.dtype)
-# print(X_train[0].numpy())
-# print(X_train, Y_train, X_test, Y_test)
-# print(X_train.dtype, Y_train.dtype)
-# print(X_test.dtype, Y_test.dtype)
-# print(folder[0])
-# (60000, 1, 28, 28) dtypes.uchar (60000,) dtypes.uchar
-
-model = ResNet(18, len(train_folder.classes))
-model.load_from_pretrained()
-acc = (model(X_test).argmax(axis=1) == Y_test).mean()
-# NOTE: tinygrad is lazy, and hasn't actually run anything by this point
-print(acc.item())  # ~10% accuracy, as expected from a random model
-# exit(0)
-
-optim = nn.optim.Adam(nn.state.get_parameters(model))
-batch_size = 1
+    def forward(self, x):
+        x = self.features(x)
+        x = self.classifier(x)
+        return x
 
 
-def t_step():
-    Tensor.training = True  # makes dropout work
-    samples = Tensor.randint(batch_size, high=X_train.shape[0])
-    # print(samples)
-    X, Y = X_train[samples], Y_train[samples]
-    # print(Y.numpy())
-    # print(X.shape)
-    optim.zero_grad()
-    loss = model(X).sparse_categorical_crossentropy(Y).backward()
-    optim.step()
-    return loss
+class AlexNet(nn.Module):
+    def __init__(self):
+        # describe the operation
+        super(AlexNet, self).__init__()
+        self.conv1 = nn.Conv2d(3, 96, kernel_size=(11, 11), stride=4)
+        self.conv2 = nn.Conv2d(96, 256, kernel_size=(5, 5), padding=2)
+        self.conv3 = nn.Conv2d(256, 384, kernel_size=(3, 3), padding=1)
+        self.conv4 = nn.Conv2d(384, 384, kernel_size=(3, 3), padding=1)
+        self.conv5 = nn.Conv2d(384, 256, kernel_size=(3, 3), padding=1)
+        # self.pool = nn.MaxPool2d(2, 2)
+        self.pool = nn.MaxPool2d(3, 2)
+        self.fc1 = nn.Linear(9216, 4096)
+        self.fc2 = nn.Linear(4096, 4096)
+        self.fc3 = nn.Linear(4096, 8)
+        self.flatten = nn.Flatten(1)
+        self.dropout = nn.Dropout(0.5)
+        # self.fc = nn.Linear(64 * 62 * 62, num_of_classes)
 
-timeit.repeat(t_step, repeat=5, number=1)
+    def forward(self, x):
+        x = self.conv1(x)
+        x = F.relu(x)
+        x = self.pool(x)
+        x = self.conv2(x)
+        x = F.relu(x)
+        x = self.pool(x)
+        x = self.conv3(x)
+        x = F.relu(x)
+        x = self.conv4(x)
+        x = F.relu(x)
+        x = self.conv5(x)
+        x = F.relu(x)
+        x = self.pool(x)
+        x = self.flatten(x)
+        x = self.dropout(x)
+        x = self.fc1(x)
+        x = F.relu(x)
+        x = self.dropout(x)
+        x = self.fc2(x)
+        x = F.relu(x)
+        x = self.fc3(x)
+        return x
 
-GlobalCounters.reset()
-with Context(DEBUG=2): t_step()
 
-jit_step = TinyJit(t_step)
-timeit.repeat(jit_step, repeat=5, number=1)
+if __name__ == "__main__":
+    dls = ImageDataLoaders.from_folder(".", train="train", valid="validation", item_tfms=Resize(227))
+    # dls.show_batch(max_n=6)
 
-# for step in range(500):
-#     loss = t_step()
-#     if step % 100 == 0:
-#         Tensor.training = False
-#         model_prediction = model(X_test).argmax(axis=1)
-#         acc = (model_prediction == Y_test).mean().item()
-#         if acc >= 0.9:
-#             break
-#         print(f"step {step:4d}, loss {loss.item():.2f}, acc {acc*100.:.2f}%")
-# print(f"step {step:4d}, loss {loss.item():.2f}, acc {acc*100.:.2f}%")
-# print(loss.dtype)
+    total_items = len(dls.train_ds)
+    batch_size = dls.bs
+    total_batches = len(dls.train)
+    print(f"number of items: {total_items}, batch_size: {batch_size}, number of batches: {total_batches}")
+    print(dls.vocab)
+    print(dls.vocab.o2i)
+    print(dls.after_item, dls.after_batch)
+    # 40k images is not optimal for training
+
+
+    opt_func = partial(OptimWrapper, opt=optim.Adam)
+
+    model = AlexNet()
+    # print(model)
+    # print(type(model))
+
+    # model = SmallModel()
+    criterion = nn.CrossEntropyLoss()
+    learn = Learner(dls, model, loss_func=criterion, opt_func=opt_func, metrics=accuracy)
+
+    # learn = vision_learner(dls, resnet18, metrics=accuracy)
+
+    # print(dls.device)
+    print(learn.model)
+    print(type(learn.model))
+
+    epoch = 10
+    suggested_learning_rate = learn.lr_find()
+    optimal_lr = suggested_learning_rate.valley
+    print(f"\nOptimal learning rate: {optimal_lr}\n")
+    learn.fine_tune(epoch, base_lr=optimal_lr)
+    # learn.fine_tune(epoch)
+
+    results = learn.validate()
+    print(f"Validation accuracy: {results[1]:.2f}")
+    # print(f"Validation accuracy: {results}")
+    # for image_path in dls.valid_ds.items:
+        # image_path = Path(image)
+        # prediction = predict_image(learn, image_path)
+        # print(f"Image: {image_path}, Predicted: {prediction}")
+
+    model_name = f"{model.__class__.__name__}-Epch:{epoch}-Acc:{results[1]*100:.0f}"
+    print(f"model name for saving: {model_name}")
+
+    
+    classes_outfile = Path("models/classes.json")
+    classes = list(dls.vocab)
+    if classes_outfile.is_file():
+        with open(classes_outfile, 'r') as f:
+            loaded_classes = json.load(f)
+            if classes != loaded_classes:
+                classes_outfile = f"models/{model_name}-classes.json"
+                print(f"json file differs from current classes saving in {classes_outfile}")
+                with open(classes_outfile, 'w') as f:
+                    json.dump(classes, f)
+    else:
+        with open(classes_outfile, 'w') as f:
+            json.dump(classes, f)
+
+    learn.save(model_name)
+    # learn.export("resnet18_finetuned.pkl")
