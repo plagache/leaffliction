@@ -18,20 +18,21 @@ def modify_image(image_path: Path, images_to_show: list) -> None:
 
 def display_images(title: str, images_with_titles: list[tuple], show=True) -> None:
     plt.style.use("dark_background")
-    rows = 1
-    cols = len(images_with_titles)
-    if cols > 5:
-        rows = 2
-        cols = int(cols / 2)
-    fig, axes = plt.subplots(rows, cols, figsize=(19.2, 10.8))
+    count = len(images_with_titles)
+    rows = count // 5
+    if count % 5 != 0:
+        rows += 1
+    fig, axes = plt.subplots(rows, 5, figsize=(19.2, 10.8))
     fig.suptitle(title, fontsize=16, fontweight="bold")
     # axes = axes.flat
     flatten_axes = axes.flatten()
 
-    for (title, img), axe in zip(images_with_titles, flatten_axes):
-        axe.imshow(img)
+    for axe in flatten_axes:
         axe.axis("off")
 
+
+    for (title, img), axe in zip(images_with_titles, flatten_axes):
+        axe.imshow(img)
         axe.set_title(title, fontsize=10)
 
     plt.tight_layout()
