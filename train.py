@@ -1,30 +1,14 @@
-from fastai.data.all import *
-from fastai.vision.all import *
-from fastai.learner import Learner
-from fastai.optimizer import OptimWrapper
-from torch import optim
+import json
+from pathlib import Path
+
 import torch.nn as nn
 import torch.nn.functional as F
-import json
+from fastai.data.all import *
+from fastai.learner import Learner
+from fastai.optimizer import OptimWrapper
+from fastai.vision.all import *
+from torch import optim
 
-def predict_image(learner, image_path):
-    test_dl = learner.dls.test_dl([image_path], with_labels=False)
-
-    preds, _ = learner.get_preds(dl=test_dl)
-    pred_class = preds.argmax(dim=1).item()
-
-    return learner.dls.vocab[pred_class]
-
-def verification(dls):
-    for i in range(100):
-        image, label = dls.train_ds[i]
-        # print(image, label)
-        label_name = dls.vocab[label]
-        print(f"Decoded label: {label_name}, Encoded label: {label}")
-        pil_image = PILImage.create(image)
-
-        pred_class, pred_idx, outputs = learn.predict(pil_image)
-        print(f"Predicted class: {pred_class}, Actual label: {label}")
 
 class SmallModel(nn.Module):
     def __init__(self):
@@ -140,7 +124,6 @@ if __name__ == "__main__":
     model_name = f"{model.__class__.__name__}-Epch:{epoch}-Acc:{results[1]*100:.0f}"
     print(f"model name for saving: {model_name}")
 
-    
     classes_outfile = Path("models/classes.json")
     classes = list(dls.vocab)
     if classes_outfile.is_file():
@@ -156,4 +139,3 @@ if __name__ == "__main__":
             json.dump(classes, f)
 
     learn.save(model_name)
-    # learn.export("resnet18_finetuned.pkl")
