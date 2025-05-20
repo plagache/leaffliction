@@ -16,7 +16,7 @@ def modify_image(image_path: Path, images_to_show: list) -> None:
         modified_image.save(output_path)
 
 
-def display_images(title: str, images_with_titles: list[tuple]) -> None:
+def display_images(title: str, images_with_titles: list[tuple], show=True) -> None:
     plt.style.use("dark_background")
     rows = 1
     cols = len(images_with_titles)
@@ -31,7 +31,9 @@ def display_images(title: str, images_with_titles: list[tuple]) -> None:
 
     plt.tight_layout()
     plt.subplots_adjust(top=0.88)
-    plt.show()
+    if show is True:
+        plt.show()
+    return fig
 
 
 if __name__ == "__main__":

@@ -3,7 +3,7 @@ from fastai.learner import Learner
 from fastai.metrics import accuracy
 from fastai.vision.all import CrossEntropyLossFlat, ImageDataLoaders, Resize
 
-from fast_model import AlexNet
+from train import AlexNet
 from pytorch_inference import get_accuracy, model_confusion
 
 if __name__ == "__main__":

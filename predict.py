@@ -1,5 +1,5 @@
 import torch
-from fast_model import SmallModel, AlexNet
+from train import SmallModel, AlexNet
 from torchvision import datasets
 from torch.utils.data import DataLoader
 import torchvision.transforms as T

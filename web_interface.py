@@ -1,6 +1,8 @@
 import gradio as gr
 from predict import predict_image, predict_dataset, get_accuracy, model_confusion
 from pathlib import Path
+from Transformation import transform_image
+from Augmentation import display_images
 
 
 def list_models():
@@ -20,13 +22,20 @@ def give_image(image_path):
 
 
 def predict(model_path, image_path):
-    if not image_path:
-        return "No image selected"
     if not model_path:
-        return "No model selected"
+        gr.Warning("No model selected")
+        return None
+    print(model_path)
+    if not image_path:
+        gr.Warning("No image selected")
+        return None
+    print(image_path)
 
     prediction = predict_image(image_path, model_path)
-    return prediction
+    transformed_images = transform_image(image_path)
+    transformed_images = [item for item in transformed_images if "masked" in item[0] or "original" in item[0]]
+    figure = display_images(f"Class predicted: {prediction}", transformed_images, show=False)
+    return figure
 
 def asdf(model_path):
     if not model_path:
@@ -41,16 +50,13 @@ def asdf(model_path):
 with gr.Blocks() as demo:
     with gr.Tab("Predict"):
         with gr.Row():
-            with gr.Column():
-                file_explorer = gr.FileExplorer(root_dir="images", file_count="single")
-            with gr.Column():
-                image_display = gr.Image(label="Selected Image")
-        with gr.Row():
-            with gr.Column():
+            with gr.Column(scale=1):
                 predict_model_selector = gr.Dropdown(choices=list_models(), label="select a model")
+                file_explorer = gr.FileExplorer(root_dir="images", file_count="single", max_height=360)
+                image_display = gr.Image(label="Selected Image")
                 predict_btn = gr.Button(value="Predict")
-            with gr.Column():
-                prediction = gr.Textbox(label="Prediction")
+            with gr.Column(scale=2):
+                prediction = gr.Plot(label="Predicted image")
 
         file_explorer.change(fn=give_image, inputs=file_explorer, outputs=image_display)
         predict_model_selector.change(inputs=predict_model_selector)
