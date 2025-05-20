@@ -33,7 +33,7 @@ def predict(model_path, image_path):
 
     prediction = predict_image(image_path, model_path)
     transformed_images = transform_image(image_path)
-    transformed_images = [item for item in transformed_images if "masked" in item[0] or "original" in item[0]]
+    transformed_images = [item for item in transformed_images if "Masked" in item[0] or "Original" in item[0]]
     figure = display_images(f"Class predicted: {prediction}", transformed_images, show=False)
     return figure
 

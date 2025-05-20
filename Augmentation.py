@@ -20,14 +20,19 @@ def display_images(title: str, images_with_titles: list[tuple], show=True) -> No
     plt.style.use("dark_background")
     rows = 1
     cols = len(images_with_titles)
+    if cols > 5:
+        rows = 2
+        cols = int(cols / 2)
     fig, axes = plt.subplots(rows, cols, figsize=(19.2, 10.8))
     fig.suptitle(title, fontsize=16, fontweight="bold")
+    # axes = axes.flat
+    flatten_axes = axes.flatten()
 
-    for i, (title, img) in enumerate(images_with_titles):
-        axes[i].imshow(img)
-        axes[i].axis("off")
+    for (title, img), axe in zip(images_with_titles, flatten_axes):
+        axe.imshow(img)
+        axe.axis("off")
 
-        axes[i].set_title(title, fontsize=10)
+        axe.set_title(title, fontsize=10)
 
     plt.tight_layout()
     plt.subplots_adjust(top=0.88)

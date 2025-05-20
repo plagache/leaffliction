@@ -98,6 +98,7 @@ transformation: debug_directory
 	# ${PYTHON} Transformation.py -src images -dst debug
 	# ${PYTHON} Transformation.py -src images/Apple_Black_rot -dst debug
 	${PYTHON} Transformation.py "images/Grape_Black_rot/image (1).JPG"
+	# ${PYTHON} Transformation.py "images/Grape_Black_rot/image (1)_Rotate.JPG"
 	# ${PYTHON} Transformation.py "images/Grape_Black_rot/image (9).JPG"
 	# ${PYTHON} Transformation.py "images/Apple_Black_rot/image (33).JPG"
 	# ${PYTHON} Transformation.py "images/Grape_Black_rot/image (33).JPG"

@@ -116,7 +116,7 @@ if __name__ == "__main__":
     if file.is_file() is True:
         predicted_class = predict_image(file, model_path)
         transformed_images = transform_image(file)
-        transformed_images = [item for item in transformed_images if "masked" in item[0] or "original" in item[0]]
+        transformed_images = [item for item in transformed_images if "Masked" in item[0] or "Original" in item[0]]
         display_images(f"Class predicted: {predicted_class}", transformed_images)
     else:
         parser.error("file provided doesn't exist")

@@ -12,37 +12,35 @@ from utils import DatasetFolder, Dataloader
 from Augmentation import display_images
 
 def apply_gaussian(image):
-    # gaussian_3_3 = (1 / 16) * np.array([[1, 2, 1], [2, 4, 2], [1, 2, 1]])
-    # output = cv.filter2D(image, -1, gaussian_3_3)
-    gaussian_5_5 = (1 / 159) * np.array([[2, 4, 5, 4, 2], [4, 9, 12, 9, 4], [5, 12, 15, 12, 5], [4, 9, 12, 9, 4], [2, 4, 5, 4, 2]])
-    output = cv.filter2D(image, -1, gaussian_5_5)
+    gaussian_3_3 = (1 / 16) * np.array([[1, 2, 1], [2, 4, 2], [1, 2, 1]])
+    output = cv.filter2D(image, -1, gaussian_3_3)
+    # gaussian_5_5 = (1 / 159) * np.array([[2, 4, 5, 4, 2], [4, 9, 12, 9, 4], [5, 12, 15, 12, 5], [4, 9, 12, 9, 4], [2, 4, 5, 4, 2]])
+    # output = cv.filter2D(image, -1, gaussian_5_5)
     return output
 
 
 def apply_vertical(image):
-    sobel_x_kernel = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
-    output = cv.filter2D(image, -1, sobel_x_kernel)
+    sobel_y_kernel = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
+    output = cv.filter2D(image, cv.CV_32F, sobel_y_kernel)
     return output
 
 
 def apply_horizontal(image):
     sobel_x_kernel = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]])
-    output = cv.filter2D(image, -1, sobel_x_kernel)
+    output = cv.filter2D(image, cv.CV_32F, sobel_x_kernel)
     return output
 
 
 def combine_edge_detection(vertical_image, horizontal_image):
     threshold_value = 75
-    output = np.sqrt(np.square(vertical_image) + np.square(horizontal_image))
-    binary_image = np.zeros_like(output, dtype=np.uint8)
+    # output = np.sqrt(np.square(vertical_image) + np.square(horizontal_image))
+    combine_gradients = np.abs(vertical_image) + np.abs(horizontal_image)
 
-    binary_image[output > threshold_value] = 1
-    return output, binary_image
+    normalized_magnitude_image = cv.normalize(combine_gradients, None, 0, 255, cv.NORM_MINMAX, cv.CV_8U)
+    binary_image = np.zeros_like(combine_gradients, dtype=np.uint8)
 
-
-def canny_edge_detection(numpy_array):
-    pcv_edge = pcv.canny_edge_detect(numpy_array, sigma=3)
-    return pcv_edge
+    binary_image[normalized_magnitude_image > threshold_value] = 1
+    return combine_gradients, binary_image
 
 
 def segmenting_red_green(numpy_array):
@@ -96,11 +94,9 @@ def transform_image(image_path):
     vertical_edges = apply_vertical(gaussian_image)
     horizontal_edges = apply_horizontal(gaussian_image)
 
-    canny_image, toto = combine_edge_detection(vertical_edges, horizontal_edges)
-
-    # make a tuple of image with their name
-    # canny_image = canny_edge_detection(gaussian_image)
-    # canny_image = canny_edge_detection(numpy_image)
+    combine_gradients, combine_edges = combine_edge_detection(vertical_edges, horizontal_edges)
+    combine_edges = apply_gaussian(combine_edges)
+    combine_gradients = apply_gaussian(combine_gradients)
 
     a_channel, median_img, otsu, gaussian_img, leaf_mask_a, masked = segmenting_red_green(numpy_image)
     b_channel, median_img, otsu, gaussian_img, leaf_mask_b, masked = segmenting_blue_yellow(numpy_image)
@@ -110,8 +106,8 @@ def transform_image(image_path):
     leaf_mask_d = pcv.logical_or(bin_img1=leaf_mask_s, bin_img2=leaf_mask_b)
     leaf_mask_z = pcv.logical_or(bin_img1=leaf_mask_c, bin_img2=leaf_mask_d)
 
-    # masked = pcv.apply_mask(img=numpy_image, mask=leaf_mask_c, mask_color='white')
-    masked = pcv.apply_mask(img=numpy_image, mask=leaf_mask_z, mask_color='white')
+    masked = pcv.apply_mask(img=numpy_image, mask=leaf_mask_c, mask_color='white')
+    # masked = pcv.apply_mask(img=numpy_image, mask=leaf_mask_z, mask_color='white')
 
     # roi = pcv.roi.circle(img=masked, x=125, y=125, r=100)
     # filtered_mask = pcv.roi.filter(mask=leaf_mask_z, roi=roi, roi_type='partial')
@@ -119,26 +115,27 @@ def transform_image(image_path):
     size_analysis_image = pcv.analyze.size(img=numpy_image, labeled_mask=leaf_mask_z)
 
     transformed_images = [
-        ("original: pil, numpy", numpy_image),
-        ("gaussian image", gaussian_image),
-        ("vertical edges", vertical_edges),
-        ("horizontal edges", horizontal_edges),
-        ("canny_edge_detection", canny_image),
-        ("s channel", s_channel),
-        ("b channel", b_channel),
-        ("a channel", a_channel),
+        ("Original", numpy_image),
+        ("Gaussian Blur", gaussian_image),
+        ("Vertical Edges", vertical_edges),
+        ("Horizontal Edges", horizontal_edges),
+        ("Combine Gradient", combine_gradients),
+        ("Combine Edges", combine_edges),
+        # ("S channel", s_channel),
+        ("B channel", b_channel),
+        ("A channel", a_channel),
         # ("median blur", median_img),
-        ("otsu", otsu),
+        # ("otsu", otsu),
         # ("gaussian_img", gaussian_img),
         # ("leaf mask b", leaf_mask_b),
         # ("leaf mask a", leaf_mask_a),
         # ("leaf mask c", leaf_mask_c),
         # ("leaf mask d", leaf_mask_d),
         # ("leaf mask z", leaf_mask_z),
-        ("leaf masked", masked),
+        ("Leaf Masked", masked),
         # ("roi", roi),
         # ("filtered mask", filtered_mask),
-        ("analysis image", size_analysis_image),
+        ("Size Analysis", size_analysis_image),
     ]
 
     return transformed_images
