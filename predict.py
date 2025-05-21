@@ -13,14 +13,14 @@ from Augmentation import display_images
 from tqdm import tqdm
 import json
 
-def get_model_from_path(model_path):
+def get_model_from_path(model_path, classes_count):
     if AlexNet.__name__ in model_path:
-        return AlexNet(), T.Compose([
+        return AlexNet(classes_count), T.Compose([
             T.Resize(227),
             T.ToTensor(),
         ])
     if SmallModel.__name__ in model_path:
-        return SmallModel(), T.Compose([
+        return SmallModel(classes_count), T.Compose([
             T.Resize(224),
             T.ToTensor(),
         ])
@@ -66,23 +66,26 @@ def predict_dataset(model_path):
     predictions = torch.cat(predictions)
     return labels, predictions, dataset.classes
 
-
-def prepare_model(model_path):
-
-    state_dict = torch.load(model_path, weights_only=False)
-
-    model, transform = get_model_from_path(model_path)
-
-    model.load_state_dict(state_dict["model"])
-    model.eval()
-
-    classes_outfile = Path("models/classes.json")
-    if classes_outfile.is_file():
-        with open(classes_outfile, 'r') as f:
+def get_classes_from_path(model_path):
+    classes_file = Path(f"{model_path.parent}/{model_path.stem}.json")
+    if classes_file.is_file():
+        with open(classes_file, 'r') as f:
             classes = json.load(f)
     else:
-        print(f"{classes_outfile} not detected")
+        print(f"{classes_file} not detected")
         exit(0)
+    return classes
+
+
+def prepare_model(model_path):
+    model_path = Path(model_path)
+    classes = get_classes_from_path(model_path)
+    model, transform = get_model_from_path(model_path, len(classes))
+
+    state_dict = torch.load(model_path, weights_only=False)
+    model.load_state_dict(state_dict["model"])
+
+    model.eval()
 
     return model, transform, classes
 

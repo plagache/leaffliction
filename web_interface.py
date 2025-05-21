@@ -29,7 +29,6 @@ def predict(model_path, image_path):
     if not image_path:
         gr.Warning("No image selected")
         return None
-    print(image_path)
 
     prediction = predict_image(image_path, model_path)
     transformed_images = transform_image(image_path)

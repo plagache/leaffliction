@@ -11,7 +11,7 @@ from torch import optim
 
 
 class SmallModel(nn.Module):
-    def __init__(self):
+    def __init__(self, classes):
         super(SmallModel, self).__init__()
         self.features = nn.Sequential(
             nn.Conv2d(3, 32, kernel_size=(3, 3)),
@@ -24,7 +24,7 @@ class SmallModel(nn.Module):
         self.classifier = nn.Sequential(
             nn.Flatten(1),
             nn.Dropout(0.5),
-            nn.Linear(64 * 54 * 54, 8)
+            nn.Linear(64 * 54 * 54, classes)
         )
 
     def forward(self, x):
@@ -34,7 +34,7 @@ class SmallModel(nn.Module):
 
 
 class AlexNet(nn.Module):
-    def __init__(self):
+    def __init__(self, classes):
         # describe the operation
         super(AlexNet, self).__init__()
         self.conv1 = nn.Conv2d(3, 96, kernel_size=(11, 11), stride=4)
@@ -46,7 +46,7 @@ class AlexNet(nn.Module):
         self.pool = nn.MaxPool2d(3, 2)
         self.fc1 = nn.Linear(9216, 4096)
         self.fc2 = nn.Linear(4096, 4096)
-        self.fc3 = nn.Linear(4096, 8)
+        self.fc3 = nn.Linear(4096, classes)
         self.flatten = nn.Flatten(1)
         self.dropout = nn.Dropout(0.5)
         # self.fc = nn.Linear(64 * 62 * 62, num_of_classes)
@@ -92,7 +92,8 @@ if __name__ == "__main__":
 
     opt_func = partial(OptimWrapper, opt=optim.Adam)
 
-    model = AlexNet()
+    classes = list(dls.vocab)
+    model = AlexNet(len(classes))
     # print(model)
     # print(type(model))
 
@@ -121,16 +122,16 @@ if __name__ == "__main__":
         # prediction = predict_image(learn, image_path)
         # print(f"Image: {image_path}, Predicted: {prediction}")
 
-    model_name = f"{model.__class__.__name__}-Epch:{epoch}-Acc:{results[1]*100:.0f}"
+    tmp_dir = "TMP_DIR"
+    model_name = f"{model.__class__.__name__}-{tmp_dir}-Epch:{epoch}-Acc:{results[1]*100:.0f}"
     print(f"model name for saving: {model_name}")
 
-    classes_outfile = Path("models/classes.json")
-    classes = list(dls.vocab)
+    classes_outfile = Path(f"models/{model_name}.json")
     if classes_outfile.is_file():
         with open(classes_outfile, 'r') as f:
             loaded_classes = json.load(f)
             if classes != loaded_classes:
-                classes_outfile = f"models/{model_name}-classes.json"
+                classes_outfile = Path(f"models/{model_name}-classes.json")
                 print(f"json file differs from current classes saving in {classes_outfile}")
                 with open(classes_outfile, 'w') as f:
                     json.dump(classes, f)

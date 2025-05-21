@@ -181,6 +181,11 @@ class DatasetFolder:
                     copy(file, new_path)
         return self
 
+    def is_balanced(self):
+        if len(set(self.count_dictionnary.values())) == 1:
+            return True
+        return False
+
     def to_path(self) -> Self:
         self.items = self.samples
         return self

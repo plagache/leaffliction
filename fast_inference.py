@@ -11,7 +11,8 @@ if __name__ == "__main__":
 
     model_path = "models/AlexNet-Epch:20-Acc:91.pth"
     state_dict = load(model_path, weights_only=False)
-    model = AlexNet()
+    classes = list(dls.vocab)
+    model = AlexNet(len(classes))
     # print(model)
     model.load_state_dict(state_dict["model"])
     # print(model)
