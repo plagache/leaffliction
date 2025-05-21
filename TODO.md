@@ -122,3 +122,10 @@ A: Consider augmentations that mimic natural variations:
     - Implement function to create random validation set
     - Define path to data
     - Specify output data type / models for processing
+
+- take a directory as argument
+- augment and/or balance directory as necessary
+- model use dynamic number of classes
+- save model => f"{ModelName}-{Dataset_Path}-Epch:{epoch}-Acc:{percent}"
+- save classes => f"{ModelName}-{Dataset_Path}-Epch:{epoch}-Acc:{percent}.json"
+- predict use model path to get classes
