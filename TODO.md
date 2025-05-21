@@ -123,11 +123,12 @@ A: Consider augmentations that mimic natural variations:
     - Define path to data
     - Specify output data type / models for processing
 
-- take a directory as argument
-- augment and/or balance directory as necessary
-    - verify if given directory as already created dataset
-    - verify validity dataset: 
-- model use dynamic number of classes
-- save model => f"{ModelName}-{Dataset_Path}-Epch:{epoch}-Acc:{percent}"
-- save classes => f"{ModelName}-{Dataset_Path}-Epch:{epoch}-Acc:{percent}.json"
-- predict use model path to get classes
+- [x] take a directory as argument
+- [x] augment and/or balance directory as necessary
+    - [x] verify if given directory as already created dataset
+    - [x] verify validity dataset: 
+- [ ] split dataset into train and validation
+- [x] model use dynamic number of classes
+- [x] save model => f"{ModelName}-{Dataset_Path}-Epch:{epoch}-Acc:{percent}"
+- [x] save classes => f"{ModelName}-{Dataset_Path}-Epch:{epoch}-Acc:{percent}.json"
+- [x] predict use model path to get classes

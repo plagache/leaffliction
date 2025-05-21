@@ -80,7 +80,7 @@ class AlexNet(nn.Module):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train")
-    parser.add_argument("directory", help="path to a directory with images to classify")
+    parser.add_argument("directory", help="path to a directory with images to train")
     args = parser.parse_args()
 
     directory = Path(args.directory)
