@@ -125,6 +125,8 @@ A: Consider augmentations that mimic natural variations:
 
 - take a directory as argument
 - augment and/or balance directory as necessary
+    - verify if given directory as already created dataset
+    - verify validity dataset: 
 - model use dynamic number of classes
 - save model => f"{ModelName}-{Dataset_Path}-Epch:{epoch}-Acc:{percent}"
 - save classes => f"{ModelName}-{Dataset_Path}-Epch:{epoch}-Acc:{percent}.json"

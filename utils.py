@@ -67,7 +67,7 @@ class DatasetFolder:
         self.images: Optional[list[Image]] = None
         self.numpy_arrays: Optional[list[np.ndarray]] = None
         self.augmented_images = {}
-        self.max_count = max(self.count_dictionnary.values())
+        self.max_count = max(self.count_dictionnary.values(), default=0)
 
     def __find_classes(self, directory: Path) -> tuple[list[str], dict[str, int]]:
         """Find the class folders in a dataset structured as follows::

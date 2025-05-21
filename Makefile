@@ -42,13 +42,13 @@ download:
 
 extract: download
 	unzip leaves.zip
-	# mkdir -p images/Apple images/Grape
+	mkdir -p images/Apple images/Grape
 	# mkdir -p images/Apple/toto
 	# mkdir -p images/Apple/tato/tota/
 	# mv images/Apple_Black_rot images/Apple/toto/
 	# mv images/Apple_rust images/Apple/tato/tota/
-	# mv images/Apple_* images/Apple/
-	# mv images/Grape_* images/Grape/
+	mv images/Apple_* images/Apple/
+	mv images/Grape_* images/Grape/
 
 debug_directory:
 	mkdir -p debug
@@ -113,7 +113,9 @@ sample: augmentation
 	${PYTHON} sample.py augmented_directory
 
 train:
-	${PYTHON} train.py
+	# ${PYTHON} train.py
+	${PYTHON} train.py images/Apple
+	# ${PYTHON} train.py images
 
 predict:
 	# ${PYTHON} predict.py

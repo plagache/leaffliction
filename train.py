@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
+import argparse
 
+from utils import DatasetFolder
 import torch.nn as nn
 import torch.nn.functional as F
 from fastai.data.all import *
@@ -77,6 +79,47 @@ class AlexNet(nn.Module):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Train")
+    parser.add_argument("directory", help="path to a directory with images to classify")
+    args = parser.parse_args()
+
+    directory = Path(args.directory)
+    if directory.is_dir() is False:
+        parser.error("Path provided doesn't exist")
+        parser.print_help()
+
+    dataset_name = directory.name + "_dataset"
+    dataset_path = Path(dataset_name)
+    # if dataset_path.exists() is False:
+    #     print("creating dataset")
+    # if dataset_path.is_dir() is False:
+    #     print("A file with the same name is conflicting. Abort!")
+    # else:
+    #     print("dataset path already exist, checking validity")
+
+    try:
+        dataset_path.mkdir(parents=True, exist_ok=True)
+    except FileExistsError:
+        print(f"Error: the '{dataset_path}' file already exists.")
+        exit(0)
+    else:
+        print(f"Successfully made the '{dataset_path}' directory.")
+
+    source: DatasetFolder = DatasetFolder(directory)
+    destination: DatasetFolder = DatasetFolder(dataset_path)
+
+    if destination.is_balanced() is False:
+        source.to_images()
+        source.augment_images()
+        source.balance_dataset(dataset_path)
+
+    exit(0)
+    # Attribute name for the Dataset
+    # check if corresponding dataset exist
+    # check if images
+    # check dataset validity, minimal and maximal number of element, and is balanced
+    # check on train and valid
+
     dls = ImageDataLoaders.from_folder(".", train="train", valid="validation", item_tfms=Resize(227))
     # dls.show_batch(max_n=6)
 
@@ -122,8 +165,7 @@ if __name__ == "__main__":
         # prediction = predict_image(learn, image_path)
         # print(f"Image: {image_path}, Predicted: {prediction}")
 
-    tmp_dir = "TMP_DIR"
-    model_name = f"{model.__class__.__name__}-{tmp_dir}-Epch:{epoch}-Acc:{results[1]*100:.0f}"
+    model_name = f"{model.__class__.__name__}-{dataset_path}-Epch:{epoch}-Acc:{results[1]*100:.0f}"
     print(f"model name for saving: {model_name}")
 
     classes_outfile = Path(f"models/{model_name}.json")
