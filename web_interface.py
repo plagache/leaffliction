@@ -25,11 +25,11 @@ def predict(model_path, image_path):
     if not model_path:
         gr.Warning("No model selected")
         return None
-    print(model_path)
     if not image_path:
         gr.Warning("No image selected")
         return None
 
+    model_path = Path(model_path)
     prediction = predict_image(image_path, model_path)
     transformed_images = transform_image(image_path)
     transformed_images = [item for item in transformed_images if "Masked" in item[0] or "Original" in item[0]]

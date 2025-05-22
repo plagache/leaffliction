@@ -46,8 +46,9 @@ def predict_image(image_path, model_path):
 def predict_dataset(model_path):
     model, transform, classes = prepare_model(model_path)
 
-    data_folder = Path("validation")
-    dataset = datasets.ImageFolder(data_folder, transform=transform)
+    dataset_path = get_dataset_from_path(model_path)
+    validation_path = dataset_path / "validation"
+    dataset = datasets.ImageFolder(validation_path, transform=transform)
     batch_size = 64
     data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
@@ -65,6 +66,9 @@ def predict_dataset(model_path):
     labels = torch.cat(labels)
     predictions = torch.cat(predictions)
     return labels, predictions, dataset.classes
+
+def get_dataset_from_path(model_path):
+    return Path(model_path.stem.split('-')[1])
 
 def get_classes_from_path(model_path):
     classes_file = Path(f"{model_path.parent}/{model_path.stem}.json")
@@ -107,7 +111,8 @@ if __name__ == "__main__":
     parser.add_argument("filename", help="a single image to predict", nargs="?", default=None)
     args = parser.parse_args()
 
-    model_path = "models/AlexNet-Apple_dataset-Epch:10-Acc:91.pth"
+    model_path = Path("models/AlexNet-Apple_dataset-Epch:10-Acc:91.pth")
+    model_path = Path("models/SmallModel-Grape_dataset-Epch:10-Acc:97.pth")
     if args.filename is None:
         labels, predictions, classes = predict_dataset(model_path)
         la_retourne_a_tourner = get_accuracy(labels, predictions)
