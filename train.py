@@ -7,11 +7,11 @@ import shutil
 from utils import DatasetFolder
 import torch.nn as nn
 import torch.nn.functional as F
-from fastai.learner import Learner
+from fastai.learner import Learner, save_model
 from fastai.optimizer import OptimWrapper
 from fastai.vision.all import ImageDataLoaders, Resize
 from fastai.metrics import accuracy
-from fastai.layers import partial
+from functools import partial
 from torch import optim
 
 
@@ -139,7 +139,7 @@ if __name__ == "__main__":
 
     dataset_path = prepare_dataset(directory)
 
-    dls = ImageDataLoaders.from_folder(dataset_path, train="train", valid="validation", item_tfms=Resize(227))
+    dls = ImageDataLoaders.from_folder(dataset_path, train="train", valid="validation", item_tfms=Resize(224))
     # dls.show_batch(max_n=6)
 
     total_items = len(dls.train_ds)
@@ -154,11 +154,11 @@ if __name__ == "__main__":
     opt_func = partial(OptimWrapper, opt=optim.Adam)
 
     classes = list(dls.vocab)
-    model = AlexNet(len(classes))
+    # model = AlexNet(len(classes))
     # print(model)
     # print(type(model))
 
-    # model = SmallModel()
+    model = SmallModel(len(classes))
     criterion = nn.CrossEntropyLoss()
     learn = Learner(dls, model, loss_func=criterion, opt_func=opt_func, metrics=accuracy)
 
@@ -183,7 +183,10 @@ if __name__ == "__main__":
         # prediction = predict_image(learn, image_path)
         # print(f"Image: {image_path}, Predicted: {prediction}")
 
-    model_name = f"models/{model.__class__.__name__}-{dataset_path}-Epch:{epoch}-Acc:{results[1]*100:.0f}"
+    model_path = Path("models")
+    model_path.mkdir(parents=True, exist_ok=True)
+
+    model_name = f"{model_path}/{model.__class__.__name__}-{dataset_path}-Epch:{epoch}-Acc:{results[1]*100:.0f}"
     print(f"model name for saving: {model_name}")
 
     classes_outfile = Path(f"{model_name}.json")
@@ -199,4 +202,5 @@ if __name__ == "__main__":
         with open(classes_outfile, 'w') as f:
             json.dump(classes, f)
 
-    learn.save_model(f"{model_name}.pth", learn.model, None)
+
+    save_model(f"{model_name}.pth", learn.model, None)

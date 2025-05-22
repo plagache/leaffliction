@@ -14,12 +14,12 @@ from tqdm import tqdm
 import json
 
 def get_model_from_path(model_path, classes_count):
-    if AlexNet.__name__ in model_path:
+    if AlexNet.__name__ in str(model_path):
         return AlexNet(classes_count), T.Compose([
             T.Resize(227),
             T.ToTensor(),
         ])
-    if SmallModel.__name__ in model_path:
+    if SmallModel.__name__ in str(model_path):
         return SmallModel(classes_count), T.Compose([
             T.Resize(224),
             T.ToTensor(),
@@ -83,7 +83,7 @@ def prepare_model(model_path):
     model, transform = get_model_from_path(model_path, len(classes))
 
     state_dict = torch.load(model_path, weights_only=False)
-    model.load_state_dict(state_dict["model"])
+    model.load_state_dict(state_dict)
 
     model.eval()
 
@@ -107,7 +107,7 @@ if __name__ == "__main__":
     parser.add_argument("filename", help="a single image to predict", nargs="?", default=None)
     args = parser.parse_args()
 
-    model_path = "models/AlexNet-Epch:10-Acc:94.pth"
+    model_path = "models/AlexNet-Apple_dataset-Epch:10-Acc:91.pth"
     if args.filename is None:
         labels, predictions, classes = predict_dataset(model_path)
         la_retourne_a_tourner = get_accuracy(labels, predictions)

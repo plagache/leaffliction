@@ -114,12 +114,13 @@ sample: augmentation
 
 train:
 	# ${PYTHON} train.py
-	${PYTHON} train.py images/Apple
+	# ${PYTHON} train.py images/Apple
+	${PYTHON} train.py images/Grape
 	# ${PYTHON} train.py images
 
 predict:
 	# ${PYTHON} predict.py
-	${PYTHON} predict.py "images/Grape_Black_rot/image (1).JPG"
+	${PYTHON} predict.py "images/Grape/Grape_Black_rot/image (1).JPG"
 
 gradio:
 	${BIN}/gradio web_interface.py
