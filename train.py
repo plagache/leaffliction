@@ -1,14 +1,17 @@
 import json
 from pathlib import Path
 import argparse
+from sample import random_split, copy_dataset
+import shutil
 
 from utils import DatasetFolder
 import torch.nn as nn
 import torch.nn.functional as F
-from fastai.data.all import *
 from fastai.learner import Learner
 from fastai.optimizer import OptimWrapper
-from fastai.vision.all import *
+from fastai.vision.all import ImageDataLoaders, Resize
+from fastai.metrics import accuracy
+from fastai.layers import partial
 from torch import optim
 
 
@@ -77,25 +80,9 @@ class AlexNet(nn.Module):
         x = self.fc3(x)
         return x
 
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Train")
-    parser.add_argument("directory", help="path to a directory with images to train")
-    args = parser.parse_args()
-
-    directory = Path(args.directory)
-    if directory.is_dir() is False:
-        parser.error("Path provided doesn't exist")
-        parser.print_help()
-
+def prepare_dataset(directory):
     dataset_name = directory.name + "_dataset"
     dataset_path = Path(dataset_name)
-    # if dataset_path.exists() is False:
-    #     print("creating dataset")
-    # if dataset_path.is_dir() is False:
-    #     print("A file with the same name is conflicting. Abort!")
-    # else:
-    #     print("dataset path already exist, checking validity")
 
     try:
         dataset_path.mkdir(parents=True, exist_ok=True)
@@ -105,22 +92,54 @@ if __name__ == "__main__":
     else:
         print(f"Successfully made the '{dataset_path}' directory.")
 
-    source: DatasetFolder = DatasetFolder(directory)
-    destination: DatasetFolder = DatasetFolder(dataset_path)
+    tmp_path = dataset_path / 'tmp'
+    train_path = dataset_path / "train"
+    validation_path = dataset_path / "validation"
 
-    if destination.is_balanced() is False:
+    source: DatasetFolder = DatasetFolder(directory)
+
+    train_dataset_exists_and_balanced = train_path.is_dir() and DatasetFolder(train_path).is_balanced()
+    validation_dataset_exists_and_balanced = validation_path.is_dir() and DatasetFolder(validation_path).is_balanced()
+
+    if train_dataset_exists_and_balanced and validation_dataset_exists_and_balanced:
+        print("Train and validation datasets already exist and are balanced. Skipping recreation.")
+    else:
+        if train_path.is_dir():
+            print(f"Removing existing unbalanced train directory: {train_path}")
+            shutil.rmtree(train_path)
+        if validation_path.is_dir():
+            print(f"Removing existing unbalanced validation directory: {validation_path}")
+            shutil.rmtree(validation_path)
+
         source.to_images()
         source.augment_images()
-        source.balance_dataset(dataset_path)
+        source.balance_dataset(tmp_path)
 
-    exit(0)
-    # Attribute name for the Dataset
-    # check if corresponding dataset exist
-    # check if images
-    # check dataset validity, minimal and maximal number of element, and is balanced
-    # check on train and valid
+        dataset_tmp: DatasetFolder = DatasetFolder(tmp_path)
 
-    dls = ImageDataLoaders.from_folder(".", train="train", valid="validation", item_tfms=Resize(227))
+        train, validation = random_split(dataset_tmp, 0.2)
+
+        copy_dataset(dataset_tmp, train, train_path)
+        copy_dataset(dataset_tmp, validation, validation_path)
+        shutil.rmtree(tmp_path)
+
+    print("Dataset preparation complete.")
+    return dataset_path
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Train")
+    parser.add_argument("directory", help="path to a directory with images to classify")
+    args = parser.parse_args()
+
+    directory = Path(args.directory)
+    if directory.is_dir() is False:
+        parser.error("Path provided doesn't exist")
+        parser.print_help()
+
+    dataset_path = prepare_dataset(directory)
+
+    dls = ImageDataLoaders.from_folder(dataset_path, train="train", valid="validation", item_tfms=Resize(227))
     # dls.show_batch(max_n=6)
 
     total_items = len(dls.train_ds)
@@ -131,7 +150,6 @@ if __name__ == "__main__":
     print(dls.vocab.o2i)
     print(dls.after_item, dls.after_batch)
     # 40k images is not optimal for training
-
 
     opt_func = partial(OptimWrapper, opt=optim.Adam)
 
@@ -165,15 +183,15 @@ if __name__ == "__main__":
         # prediction = predict_image(learn, image_path)
         # print(f"Image: {image_path}, Predicted: {prediction}")
 
-    model_name = f"{model.__class__.__name__}-{dataset_path}-Epch:{epoch}-Acc:{results[1]*100:.0f}"
+    model_name = f"models/{model.__class__.__name__}-{dataset_path}-Epch:{epoch}-Acc:{results[1]*100:.0f}"
     print(f"model name for saving: {model_name}")
 
-    classes_outfile = Path(f"models/{model_name}.json")
+    classes_outfile = Path(f"{model_name}.json")
     if classes_outfile.is_file():
         with open(classes_outfile, 'r') as f:
             loaded_classes = json.load(f)
             if classes != loaded_classes:
-                classes_outfile = Path(f"models/{model_name}-classes.json")
+                classes_outfile = Path(f"{model_name}-classes.json")
                 print(f"json file differs from current classes saving in {classes_outfile}")
                 with open(classes_outfile, 'w') as f:
                     json.dump(classes, f)
@@ -181,4 +199,4 @@ if __name__ == "__main__":
         with open(classes_outfile, 'w') as f:
             json.dump(classes, f)
 
-    learn.save(model_name)
+    learn.save_model(f"{model_name}.pth", learn.model, None)
