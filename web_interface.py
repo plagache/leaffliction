@@ -42,15 +42,16 @@ def predict(model_path, image_path):
     return figure
 
 
-def asdf(model_path):
+def validate_dataset(model_path):
     if not model_path:
         return "No model selected", None
 
+    model_path = Path(model_path)
     labels, predictions, classes = predict_dataset(model_path)
-    la_retourne_a_tourner = get_accuracy(labels, predictions)
+    accuracy = get_accuracy(labels, predictions)
     confusion_figure = model_confusion(labels, predictions, classes)
 
-    return la_retourne_a_tourner, confusion_figure
+    return f"{accuracy * 100:.2f}", confusion_figure
 
 
 with gr.Blocks() as demo:
@@ -86,7 +87,7 @@ with gr.Blocks() as demo:
         confusion = gr.Plot(label="Confusion Matrix")
 
         validation_btn.click(
-                fn=asdf,
+                fn=validate_dataset,
                 inputs=valid_model_selector,
                 outputs=[validation, confusion])
         valid_model_selector.change(inputs=valid_model_selector)

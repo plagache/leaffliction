@@ -128,8 +128,8 @@ if __name__ == "__main__":
 
     if args.filename is None:
         labels, predictions, classes = predict_dataset(model_path)
-        la_retourne_a_tourner = get_accuracy(labels, predictions)
-        print(f"accuracy of {la_retourne_a_tourner * 100:.2f}%\
+        accuracy = get_accuracy(labels, predictions)
+        print(f"accuracy of {accuracy * 100:.2f}%\
                 on {len(labels)} items")
         model_confusion(labels, predictions, classes, show=True)
         exit(0)
