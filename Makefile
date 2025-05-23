@@ -148,7 +148,8 @@ test:
 clean:
 	rm -rf debug*
 	rm -rf augmented*
-	rm -rf images*
+	rm -rf *.jpg
+	rm -rf images
 	rm -rf train/
 	rm -rf validation/
 

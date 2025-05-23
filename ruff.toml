@@ -33,4 +33,4 @@ lint.select = [
   "RUF018", # assignment-in-assert
 ]
 
-line-length = 80
+line-length = 79

@@ -101,7 +101,8 @@ def prepare_model(model_path):
 def model_confusion(y_true, y_prediction, classes, show=False):
     model_cm = confusion_matrix(y_true, y_prediction)
     print(f"model confusion matrice:\n{model_cm}")
-    display = ConfusionMatrixDisplay(model_cm, display_labels=classes).plot(cmap="Blues", xticks_rotation=45)
+    display = ConfusionMatrixDisplay(model_cm, display_labels=classes) \
+        .plot(cmap="Blues", xticks_rotation=45)
     if show is True:
         plt.show()
     return display.figure_
@@ -113,7 +114,12 @@ def get_accuracy(y_true, y_prediction):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Predict")
-    parser.add_argument("filename", help="a single image to predict", nargs="?", default=None)
+    parser.add_argument(
+            "filename",
+            help="a single image to predict",
+            nargs="?",
+            default=None
+    )
     args = parser.parse_args()
 
     model_path = Path("models/AlexNet-Apple_dataset-Epch:10-Acc:91.pth")
@@ -121,7 +127,8 @@ if __name__ == "__main__":
     if args.filename is None:
         labels, predictions, classes = predict_dataset(model_path)
         la_retourne_a_tourner = get_accuracy(labels, predictions)
-        print(f"accuracy of {la_retourne_a_tourner * 100:.2f}% on {len(labels)} items")
+        print(f"accuracy of {la_retourne_a_tourner * 100:.2f}%\
+                on {len(labels)} items")
         model_confusion(labels, predictions, classes, show=True)
         exit(0)
 
@@ -129,8 +136,12 @@ if __name__ == "__main__":
     if file.is_file() is True:
         predicted_class = predict_image(file, model_path)
         transformed_images = transform_image(file)
-        transformed_images = [item for item in transformed_images if "Masked" in item[0] or "Original" in item[0]]
-        display_images(f"Class predicted: {predicted_class}", transformed_images)
+        transformed_images = [
+            item for item in transformed_images
+            if "Masked" in item[0] or "Original" in item[0]
+        ]
+        display_images(
+            f"Class predicted: {predicted_class}", transformed_images)
     else:
         parser.error("file provided doesn't exist")
         parser.print_help()

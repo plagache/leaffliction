@@ -16,7 +16,8 @@ def modify_image(image_path: Path, images_to_show: list) -> None:
         modified_image.save(output_path)
 
 
-def display_images(title: str, images_with_titles: list[tuple], show=True) -> None:
+def display_images(title: str, images_with_titles: list[tuple], show=True) \
+        -> None:
     plt.style.use("dark_background")
     count = len(images_with_titles)
     max_cols = 5
@@ -44,7 +45,8 @@ def display_images(title: str, images_with_titles: list[tuple], show=True) -> No
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Augment an image or directories of images")
+    parser = argparse.ArgumentParser(
+            description="Augment an image or directories of images")
     parser.add_argument("path", help="the file(s) to augment")
     args = parser.parse_args()
 

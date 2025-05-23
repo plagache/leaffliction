@@ -10,7 +10,8 @@ from typing import Optional, Self, Union
 
 import cv2
 import numpy as np
-from Augmentor.Operations import Distort, Flip, RandomBrightness, Rotate, Shear, Zoom
+from Augmentor.Operations import Distort, Flip, RandomBrightness, Rotate, \
+        Shear, Zoom
 from PIL import Image
 from tqdm import tqdm
 
@@ -18,12 +19,24 @@ from tqdm import tqdm
 def get_modified_images(image: Image) -> dict[str, Image]:
 
     modified_images = {
-        "Intensity": RandomBrightness(probability=1, min_factor=0.7, max_factor=1.3).perform_operation([image])[0],
-        "Rotate": Rotate(probability=1, rotation=90).perform_operation([image])[0],
-        "Flip": Flip(probability=1, top_bottom_left_right="RANDOM").perform_operation([image])[0],
-        "Shear": Shear(probability=1, max_shear_left=15, max_shear_right=15).perform_operation([image])[0],
-        "Zoom": Zoom(probability=1, min_factor=1.05, max_factor=1.15).perform_operation([image])[0],
-        "Distortion": Distort(probability=1, grid_width=4, grid_height=4, magnitude=20).perform_operation([image])[0],
+        "Intensity": RandomBrightness(
+            probability=1, min_factor=0.7, max_factor=1.3
+            ).perform_operation([image])[0],
+        "Rotate": Rotate(
+            probability=1, rotation=90
+            ).perform_operation([image])[0],
+        "Flip": Flip(
+            probability=1, top_bottom_left_right="RANDOM"
+            ).perform_operation([image])[0],
+        "Shear": Shear(
+            probability=1, max_shear_left=15, max_shear_right=15
+            ).perform_operation([image])[0],
+        "Zoom": Zoom(
+            probability=1, min_factor=1.05, max_factor=1.15
+            ).perform_operation([image])[0],
+        "Distortion": Distort(
+            probability=1, grid_width=4, grid_height=4, magnitude=20
+            ).perform_operation([image])[0],
     }
     return modified_images.items()
 
@@ -58,7 +71,8 @@ class DatasetFolder:
         self.augmented_images = {}
         self.max_count = max(self.count_dictionnary.values(), default=0)
 
-    def __find_classes(self, directory: Path) -> tuple[list[str], dict[str, int]]:
+    def __find_classes(self, directory: Path)\
+            -> tuple[list[str], dict[str, int]]:
         """Find the class folders in a dataset structured as follows::
 
             directory/
@@ -76,7 +90,8 @@ class DatasetFolder:
             directory(str): Root directory path, corresponding to ``self.root``
 
         Outputs:
-            (Tuple[List[str], Dict[str, int]]): List of all classes and dictionary mapping each class to an index.
+            (Tuple[List[str], Dict[str, int]]): List of all classes and \
+                    dictionary mapping each class to an index.
 
             list["dog", "cat", "monkey"]
 
@@ -91,7 +106,8 @@ class DatasetFolder:
             category_index: int = 0
             for root, dirs, files in directory.walk(top_down=False):
                 root: str = str(root)
-                category: str = root if len(root.split("/")) < 1 else root.split("/")[-1]
+                category: str = root if len(root.split("/")) < 1\
+                    else root.split("/")[-1]
                 if len(files) != 0:
                     self.classes.append(category)
                     if len(dirs) == 0:
@@ -99,7 +115,10 @@ class DatasetFolder:
                         self.count_dictionnary[category] = len(files)
 
                         # find all indices where root is in a sample
-                        indices: list[int] = [index for index, path in enumerate(self.samples) if root in str(path)]
+                        indices: list[int] = [
+                            index for index, path in enumerate(self.samples)
+                            if root in str(path)
+                        ]
                         self.indices_dictionnary[category] = indices
                     category_index += 1
         return self.classes, self.mapped_dictionnary
@@ -113,7 +132,9 @@ class DatasetFolder:
         """
         pattern = "*"
         files: list[Path] = list(directory.rglob(pattern))
-        samples: list[Path] = [sample for sample in files if Path.is_file(sample) is True]
+        samples: list[Path] = [
+            sample for sample in files if Path.is_file(sample) is True
+        ]
         return samples
 
     def augment_images(self) -> Self:
@@ -129,7 +150,10 @@ class DatasetFolder:
                 image: Image = self.images[index]
 
                 for modification, modified_image in get_modified_images(image):
-                    output_path = get_modified_image_name(modification, file_pathname)
+                    output_path = get_modified_image_name(
+                        modification,
+                        file_pathname
+                    )
                     augmented_images.append(output_path)
                     modified_image.save(output_path)
             self.augmented_images[name] = augmented_images
@@ -143,12 +167,14 @@ class DatasetFolder:
         Outputs:
             list: list of items of given category
         """
-        return list(map(lambda i: items[i], self.indices_dictionnary[category]))
+        return list(map(
+            lambda i: items[i], self.indices_dictionnary[category]))
 
     def balance_dataset(self, output_directory: str) -> Self:
         """
         Inputs:
-            output_directory: the directory where the balanced dataset will be saved
+            output_directory: the directory where the balanced dataset will be
+                    saved
         """
         # Balance dataset
         # Create output directories (only relevant for balancing dataset)
@@ -158,15 +184,18 @@ class DatasetFolder:
             Path(new_path).mkdir(parents=True, exist_ok=True)
 
             # 1 - copy all original images in new_path
-            for file in self.get_items_from_categories(self.samples, category_name):
+            for file in self.get_items_from_categories(
+                    self.samples, category_name):
                 copy(file, new_path)
 
-            # when dir is created we can then balance this category around the biggest known
+            # when dir is created we can then balance this category around the
+            # biggest known
             # 2 - copy max_count - category.count images in new_path
             category_count = self.count_dictionnary[category_name]
             augmented_images = self.augmented_images[category_name]
             if self.max_count > category_count:
-                for file in sample(augmented_images, self.max_count - category_count):
+                for file in sample(
+                        augmented_images, self.max_count - category_count):
                     copy(file, new_path)
         return self
 
@@ -186,7 +215,10 @@ class DatasetFolder:
             for path in self.samples:
                 image_array = cv2.imread(str(path))
                 if new_size:
-                    image_array = cv2.resize(image_array, dsize=new_size, interpolation=cv2.INTER_LANCZOS4)
+                    image_array = cv2.resize(
+                        image_array, dsize=new_size,
+                        interpolation=cv2.INTER_LANCZOS4
+                    )
                 self.numpy_arrays.append(image_array)
             t1 = time.monotonic()
             print(f"create numpy list: {t1 - t0}")
@@ -213,7 +245,8 @@ class DatasetFolder:
             index: int
 
         Outputs:
-            tuple: (sample, target) where target is class_index of the target class.
+            tuple: (sample, target) where target is class_index of the target
+                class.
         """
         start = index
         stop, step = None, None
@@ -239,7 +272,8 @@ class DatasetFolder:
 
     def __len__(self) -> int:
         """
-        needed by the Dataloaders to know how many samples there is and how to shuffle/separate each batch
+        needed by the Dataloaders to know how many samples there is and how to
+            shuffle/separate each batch
         """
         lenght = len(self.items)
         return lenght
@@ -247,10 +281,14 @@ class DatasetFolder:
 
 class Dataloader:
     """
-    we give a type(Dataset) to this Loaders a batch size, and a bunch of other parameters to this class and it fetch the data for us
+    we give a type(Dataset) to this Loaders a batch size, and a bunch of other
+    parameters to this class and it fetch the data for us
     """
 
-    def __init__(self, dataset: DatasetFolder, batch_size: int, shuffle: bool = False):
+    def __init__(
+            self,
+            dataset: DatasetFolder, batch_size: int, shuffle: bool = False
+            ):
         self.dataset: DatasetFolder = dataset
         self.batch_size: int = batch_size
         self.shuffle: bool = shuffle
@@ -273,7 +311,9 @@ class Dataloader:
 
         while self.index + self.batch_size < len(self.dataset):
             # batch_size number of indices
-            batch_indices = self.indices[self.index: self.index + self.batch_size]
+            batch_indices = self.indices[
+                self.index: self.index + self.batch_size
+            ]
             batch = [self.dataset[index] for index in batch_indices]
             yield tuple(batch)
             self.index += self.batch_size

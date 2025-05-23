@@ -27,9 +27,7 @@ class SmallModel(nn.Module):
             nn.MaxPool2d(2, 2),
         )
         self.classifier = nn.Sequential(
-            nn.Flatten(1),
-            nn.Dropout(0.5),
-            nn.Linear(64 * 54 * 54, classes)
+            nn.Flatten(1), nn.Dropout(0.5), nn.Linear(64 * 54 * 54, classes)
         )
 
     def forward(self, x):
@@ -90,23 +88,38 @@ def prepare_dataset(directory):
     else:
         print(f"Successfully made the '{dataset_path}' directory.")
 
-    tmp_path = dataset_path / 'tmp'
+    tmp_path = dataset_path / "tmp"
     train_path = dataset_path / "train"
     validation_path = dataset_path / "validation"
 
     source: DatasetFolder = DatasetFolder(directory)
 
-    train_dataset_exists_and_balanced = train_path.is_dir() and DatasetFolder(train_path).is_balanced()
-    validation_dataset_exists_and_balanced = validation_path.is_dir() and DatasetFolder(validation_path).is_balanced()
+    train_dataset_exists_and_balanced = (
+        train_path.is_dir() and DatasetFolder(train_path).is_balanced()
+    )
+    validation_dataset_exists_and_balanced = (
+        validation_path.is_dir()
+        and DatasetFolder(validation_path).is_balanced()
+    )
 
-    if train_dataset_exists_and_balanced and validation_dataset_exists_and_balanced:
-        print("Train and validation datasets already exist and are balanced. Skipping recreation.")
+    if (
+        train_dataset_exists_and_balanced
+        and validation_dataset_exists_and_balanced
+    ):
+        print(
+            "Train and validation datasets already exist and are balanced. \
+                    Skipping recreation."
+        )
     else:
         if train_path.is_dir():
-            print(f"Removing existing unbalanced train directory: {train_path}")
+            print(
+                f"Removing existing unbalanced train directory: {train_path}")
             shutil.rmtree(train_path)
         if validation_path.is_dir():
-            print(f"Removing existing unbalanced validation directory: {validation_path}")
+            print(
+                f"Removing existing unbalanced validation directory: \
+                        {validation_path}"
+            )
             shutil.rmtree(validation_path)
 
         source.to_images()
@@ -127,7 +140,9 @@ def prepare_dataset(directory):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train")
-    parser.add_argument("directory", help="path to a directory with images to classify")
+    parser.add_argument(
+        "directory", help="path to a directory with images to classify"
+    )
     args = parser.parse_args()
 
     directory = Path(args.directory)
@@ -137,13 +152,18 @@ if __name__ == "__main__":
 
     dataset_path = prepare_dataset(directory)
 
-    dls = ImageDataLoaders.from_folder(dataset_path, train="train", valid="validation", item_tfms=Resize(224))
+    dls = ImageDataLoaders.from_folder(
+        dataset_path, train="train", valid="validation", item_tfms=Resize(224)
+    )
     # dls.show_batch(max_n=6)
 
     total_items = len(dls.train_ds)
     batch_size = dls.bs
     total_batches = len(dls.train)
-    print(f"number of items: {total_items}, batch_size: {batch_size}, number of batches: {total_batches}")
+    print(
+        f"number of items: {total_items}, batch_size: {batch_size}, number of \
+                batches: {total_batches}"
+    )
     print(dls.vocab)
     print(dls.vocab.o2i)
     print(dls.after_item, dls.after_batch)
@@ -157,7 +177,9 @@ if __name__ == "__main__":
     model = SmallModel(len(classes))
 
     criterion = nn.CrossEntropyLoss()
-    learn = Learner(dls, model, loss_func=criterion, opt_func=opt_func, metrics=accuracy)
+    learn = Learner(
+        dls, model, loss_func=criterion, opt_func=opt_func, metrics=accuracy
+    )
 
     print(learn.model)
     print(type(learn.model))
@@ -174,20 +196,24 @@ if __name__ == "__main__":
     model_path = Path("models")
     model_path.mkdir(parents=True, exist_ok=True)
 
-    model_name = f"{model_path}/{model.__class__.__name__}-{dataset_path}-Epch:{epoch}-Acc:{results[1]*100:.0f}"
+    model_name = f"{model_path}/{model.__class__.__name__}-{dataset_path}-\
+            Epch:{epoch}-Acc:{results[1] * 100:.0f}"
     print(f"model name for saving: {model_name}")
 
     classes_outfile = Path(f"{model_name}.json")
     if classes_outfile.is_file():
-        with open(classes_outfile, 'r') as f:
+        with open(classes_outfile, "r") as f:
             loaded_classes = json.load(f)
             if classes != loaded_classes:
                 classes_outfile = Path(f"{model_name}-classes.json")
-                print(f"json file differs from current classes saving in {classes_outfile}")
-                with open(classes_outfile, 'w') as f:
+                print(
+                    f"json file differs from current classes saving in \
+                            {classes_outfile}"
+                )
+                with open(classes_outfile, "w") as f:
                     json.dump(classes, f)
     else:
-        with open(classes_outfile, 'w') as f:
+        with open(classes_outfile, "w") as f:
             json.dump(classes, f)
 
     save_model(f"{model_name}.pth", learn.model, None)

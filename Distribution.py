@@ -5,12 +5,16 @@ from utils import DatasetFolder
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="analyse a dataset from a given directory")
+    parser = argparse.ArgumentParser(
+            description="analyse a dataset from a given directory")
     parser.add_argument("directory", help="the directory to parse")
     args = parser.parse_args()
 
     folder: DatasetFolder = DatasetFolder(args.directory)
-    sorted_count = dict(sorted(folder.count_dictionnary.items(), key=lambda item: item[1], reverse=True))
+    sorted_count = dict(sorted(
+        folder.count_dictionnary.items(),
+        key=lambda item: item[1],
+        reverse=True))
     labels = sorted_count.keys()
     sizes = sorted_count.values()
     num_classes = len(labels)

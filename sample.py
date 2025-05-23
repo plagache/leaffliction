@@ -21,7 +21,8 @@ def copy_dataset(dataset: DatasetFolder, indices: list, output_directory: str):
             destination: Path = Path(f"{output_directory}/{category_name}")
 
             if destination.exists() is True:
-                raise FileExistsError(f"The directory [{destination}] already exist")
+                raise FileExistsError(
+                        f"The directory [{destination}] already exist")
 
             paths[category_name] = destination
             destination.mkdir(parents=True, exist_ok=True)
@@ -53,7 +54,8 @@ def random_split(dataset: DatasetFolder, percentage: float):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Sample a directory into a training and validation set")
+    parser = argparse.ArgumentParser(
+        description="Sample a directory into a training and validation set")
     parser.add_argument("path", help="the directory to sample")
     args = parser.parse_args()
 
