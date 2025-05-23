@@ -11,7 +11,7 @@ def list_models():
     models = []
     for model in files:
         if Path.is_file(model):
-            name = model.name.split("-")[0]
+            name = model.name.split(".")[0]
             models.append((name, str(model)))
     return models
 

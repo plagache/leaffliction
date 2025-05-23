@@ -90,7 +90,7 @@ def prepare_model(model_path):
     classes = get_classes_from_path(model_path)
     model, transform = get_model_from_path(model_path, len(classes))
 
-    state_dict = torch.load(model_path, weights_only=False)
+    state_dict = torch.load(model_path, weights_only=False, map_location='cpu')
     model.load_state_dict(state_dict)
 
     model.eval()
@@ -122,8 +122,10 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    model_path = Path("models/AlexNet-Apple_dataset-Epch:10-Acc:91.pth")
-    model_path = Path("models/SmallModel-Grape_dataset-Epch:10-Acc:97.pth")
+    model_path = Path("models/AlexNet-images_dataset-Epch:10-Acc:96.pth")
+    # model_path = Path("models/AlexNet-Apple_dataset-Epch:10-Acc:91.pth")
+    # model_path = Path("models/SmallModel-Grape_dataset-Epch:10-Acc:97.pth")
+
     if args.filename is None:
         labels, predictions, classes = predict_dataset(model_path)
         la_retourne_a_tourner = get_accuracy(labels, predictions)

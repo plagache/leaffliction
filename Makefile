@@ -7,10 +7,6 @@ BIN=${VENV}/bin
 PYTHON=${BIN}/python
 ACTIVATE=${BIN}/activate
 
-PROGRAM=
-
-# ARGUMENTS=
-
 
 #------------------------------------------------#
 #   SETUP                                        #
@@ -42,13 +38,9 @@ download:
 
 extract: download
 	unzip leaves.zip
-	mkdir -p images/Apple images/Grape
-	# mkdir -p images/Apple/toto
-	# mkdir -p images/Apple/tato/tota/
-	# mv images/Apple_Black_rot images/Apple/toto/
-	# mv images/Apple_rust images/Apple/tato/tota/
-	mv images/Apple_* images/Apple/
-	mv images/Grape_* images/Grape/
+	# mkdir -p images/Apple images/Grape
+	# mv images/Apple_* images/Apple/
+	# mv images/Grape_* images/Grape/
 
 debug_directory:
 	mkdir -p debug
@@ -74,82 +66,43 @@ nvidia:
 #------------------------------------------------#
 #   RECIPES                                      #
 #------------------------------------------------#
-run:
-	${PYTHON} ${PROGRAM} \
-	# ${ARGUMENTS}
-
-get_dataset:
-	${PYTHON} helpers.py
-
 distribution:
-	${PYTHON} Distribution.py images
-	# ${PYTHON} Distribution.py augmented_directory
+	# ${PYTHON} Distribution.py images
+	${PYTHON} Distribution.py augmented_directory
 	# ${PYTHON} Distribution.py images/Apple
 	# ${PYTHON} Distribution.py images/Grape
 
 augmentation:
 	# ${PYTHON} Augmentation.py "images/Apple_healthy/image (42).JPG"
-	# ${PYTHON} Augmentation.py "images/Apple_healthy/image (9).JPG"
+	${PYTHON} Augmentation.py "images/Apple_healthy/image (9).JPG"
+	# ${PYTHON} Augmentation.py images
 	# ${PYTHON} Augmentation.py images/Apple_healthy
 	# ${PYTHON} Augmentation.py images/Apple
-	${PYTHON} Augmentation.py images
 
 transformation: debug_directory
-	# ${PYTHON} Transformation.py -src images -dst debug
-	# ${PYTHON} Transformation.py -src images/Apple_Black_rot -dst debug
 	${PYTHON} Transformation.py "images/Grape_Black_rot/image (1).JPG"
-	# ${PYTHON} Transformation.py "images/Grape_Black_rot/image (1)_Rotate.JPG"
-	# ${PYTHON} Transformation.py "images/Grape_Black_rot/image (9).JPG"
 	# ${PYTHON} Transformation.py "images/Apple_Black_rot/image (33).JPG"
-	# ${PYTHON} Transformation.py "images/Grape_Black_rot/image (33).JPG"
-	# ${PYTHON} Transformation.py "images/Apple_healthy/image (9).JPG"
-	# These usages are incorrect and should throw error
-	# ${PYTHON} Transformation.py -src images -dst
-	# ${PYTHON} Transformation.py -src -dst debug
-	# ${PYTHON} Transformation.py -src images -dst debug "images/Apple/Apple_healthy/image (9).JPG"
-	# ${PYTHON} Transformation.py debug "images/Apple_healthy/image (9).JPG"
+	# ${PYTHON} Transformation.py -src images/Apple_Black_rot -dst debug
 
 sample: augmentation
 	${PYTHON} sample.py augmented_directory
 
 train:
-	# ${PYTHON} train.py
+	${PYTHON} train.py images
 	# ${PYTHON} train.py images/Apple
-	${PYTHON} train.py images/Grape
-	# ${PYTHON} train.py images
+	# ${PYTHON} rain.py images/Grape
 
 predict:
+	${PYTHON} predict.py "images/Grape_Black_rot/image (1).JPG"
 	# ${PYTHON} predict.py
-	${PYTHON} predict.py "images/Grape/Grape_Black_rot/image (1).JPG"
 
 gradio:
 	${BIN}/gradio web_interface.py
 
-viz:
-	VIZ=1 ${PYTHON} train_.py train validation
-
-resnet:
-	${PYTHON} resnet.py
-
-alexnet:
-	${PYTHON} alex_torch.py
-
-fast_inference:
-	${PYTHON} fast_inference.py
-
-fine:
-	${PYTHON} fine_tune.py train validation
-
-reaugmentation: clean extract augmentation
-
-test:
-	${PYTHON} test_utils.py -v
-
 clean:
 	rm -rf debug*
 	rm -rf augmented*
-	rm -rf *.jpg
-	rm -rf images
+	rm -rf images*
 	rm -rf train/
 	rm -rf validation/
 
