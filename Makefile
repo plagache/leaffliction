@@ -101,10 +101,7 @@ gradio:
 
 clean:
 	rm -rf debug*
-	rm -rf augmented*
-	rm -rf images*
-	rm -rf train/
-	rm -rf validation/
+	rm -rf images
 
 fclean: clean
 	rm -rf ${VENV}
@@ -118,4 +115,4 @@ re: fclean setup run
 #   SPEC                                         #
 #------------------------------------------------#
 .SILENT:
-.PHONY: setup venv uv_upgrade pip_upgrade install module requirements list version size run clean fclean re download train
+.PHONY: setup venv uv_upgrade pip_upgrade install requirements module download extract debug_directory list version size nvidia distribution augmentation transformation sample train predict gradio clean fclean re
