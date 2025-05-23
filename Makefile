@@ -102,6 +102,8 @@ gradio:
 clean:
 	rm -rf debug*
 	rm -rf images
+	rm -rf *_dataset
+	rm -rf augmented_directory
 
 fclean: clean
 	rm -rf ${VENV}
