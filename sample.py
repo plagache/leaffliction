@@ -39,8 +39,8 @@ def random_split(dataset: DatasetFolder, percentage: float):
         number_to_slice_for_validation = len(indices) * percentage
 
         train_category_indices, validation_category_indices = (
-            indices[int(number_to_slice_for_validation) :],
-            indices[: int(number_to_slice_for_validation)],
+            indices[int(number_to_slice_for_validation):],
+            indices[:int(number_to_slice_for_validation)],
         )
 
         train_indices += train_category_indices

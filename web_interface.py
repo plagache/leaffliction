@@ -36,6 +36,7 @@ def predict(model_path, image_path):
     figure = display_images(f"Class predicted: {prediction}", transformed_images, show=False)
     return figure
 
+
 def asdf(model_path):
     if not model_path:
         return "No model selected", None
@@ -45,6 +46,7 @@ def asdf(model_path):
     confusion_figure = model_confusion(labels, predictions, classes)
 
     return la_retourne_a_tourner, confusion_figure
+
 
 with gr.Blocks() as demo:
     with gr.Tab("Predict"):

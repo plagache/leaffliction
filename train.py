@@ -40,21 +40,18 @@ class SmallModel(nn.Module):
 
 class AlexNet(nn.Module):
     def __init__(self, classes):
-        # describe the operation
         super(AlexNet, self).__init__()
         self.conv1 = nn.Conv2d(3, 96, kernel_size=(11, 11), stride=4)
         self.conv2 = nn.Conv2d(96, 256, kernel_size=(5, 5), padding=2)
         self.conv3 = nn.Conv2d(256, 384, kernel_size=(3, 3), padding=1)
         self.conv4 = nn.Conv2d(384, 384, kernel_size=(3, 3), padding=1)
         self.conv5 = nn.Conv2d(384, 256, kernel_size=(3, 3), padding=1)
-        # self.pool = nn.MaxPool2d(2, 2)
         self.pool = nn.MaxPool2d(3, 2)
         self.fc1 = nn.Linear(9216, 4096)
         self.fc2 = nn.Linear(4096, 4096)
         self.fc3 = nn.Linear(4096, classes)
         self.flatten = nn.Flatten(1)
         self.dropout = nn.Dropout(0.5)
-        # self.fc = nn.Linear(64 * 62 * 62, num_of_classes)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -79,6 +76,7 @@ class AlexNet(nn.Module):
         x = F.relu(x)
         x = self.fc3(x)
         return x
+
 
 def prepare_dataset(directory):
     dataset_name = directory.name + "_dataset"
@@ -154,17 +152,13 @@ if __name__ == "__main__":
     opt_func = partial(OptimWrapper, opt=optim.Adam)
 
     classes = list(dls.vocab)
-    # model = AlexNet(len(classes))
-    # print(model)
-    # print(type(model))
 
+    # model = AlexNet(len(classes))
     model = SmallModel(len(classes))
+
     criterion = nn.CrossEntropyLoss()
     learn = Learner(dls, model, loss_func=criterion, opt_func=opt_func, metrics=accuracy)
 
-    # learn = vision_learner(dls, resnet18, metrics=accuracy)
-
-    # print(dls.device)
     print(learn.model)
     print(type(learn.model))
 
@@ -173,15 +167,9 @@ if __name__ == "__main__":
     optimal_lr = suggested_learning_rate.valley
     print(f"\nOptimal learning rate: {optimal_lr}\n")
     learn.fine_tune(epoch, base_lr=optimal_lr)
-    # learn.fine_tune(epoch)
 
     results = learn.validate()
     print(f"Validation accuracy: {results[1]:.2f}")
-    # print(f"Validation accuracy: {results}")
-    # for image_path in dls.valid_ds.items:
-        # image_path = Path(image)
-        # prediction = predict_image(learn, image_path)
-        # print(f"Image: {image_path}, Predicted: {prediction}")
 
     model_path = Path("models")
     model_path.mkdir(parents=True, exist_ok=True)
@@ -201,6 +189,5 @@ if __name__ == "__main__":
     else:
         with open(classes_outfile, 'w') as f:
             json.dump(classes, f)
-
 
     save_model(f"{model_name}.pth", learn.model, None)

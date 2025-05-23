@@ -4,12 +4,12 @@ import cv2 as cv
 import numpy as np
 from plantcv import plantcv as pcv
 from PIL import Image
-# from tinygrad import Tensor, nn
 from pathlib import Path
 from tqdm import tqdm
 
-from utils import DatasetFolder, Dataloader
+from utils import DatasetFolder
 from Augmentation import display_images
+
 
 def apply_gaussian(image):
     gaussian_3_3 = (1 / 16) * np.array([[1, 2, 1], [2, 4, 2], [1, 2, 1]])
@@ -45,20 +45,20 @@ def combine_edge_detection(vertical_image, horizontal_image):
 
 def segmenting_red_green(numpy_array):
     # lab color space: luminosity, Red/Green, Yellow/Blue
-    a_channel = pcv.rgb2gray_lab(rgb_img=numpy_array, channel='a')
+    a_channel = pcv.rgb2gray_lab(rgb_img=numpy_array, channel="a")
     # median blur use the median: remove salt and paper
     median_img = pcv.median_blur(gray_img=a_channel, ksize=11)
     otsu = pcv.threshold.otsu(gray_img=median_img, object_type="dark")
     # gaussian blur calculate the mean of neighbor: produce smooth and soft edges
     gaussian_img = pcv.gaussian_blur(img=otsu, ksize=(5, 5), sigma_x=0, sigma_y=None)
     leaf_mask = pcv.fill_holes(bin_img=otsu)
-    masked = pcv.apply_mask(img=numpy_array, mask=leaf_mask, mask_color='white')
+    masked = pcv.apply_mask(img=numpy_array, mask=leaf_mask, mask_color="white")
     return a_channel, median_img, otsu, gaussian_img, leaf_mask, masked
 
 
 def segmenting_blue_yellow(numpy_array):
     # lab color space: luminosity, Red/Green, Yellow/Blue
-    b_channel = pcv.rgb2gray_lab(rgb_img=numpy_array, channel='b')
+    b_channel = pcv.rgb2gray_lab(rgb_img=numpy_array, channel="b")
     # median blur use the median: remove salt and paper
     median_img = pcv.median_blur(gray_img=b_channel, ksize=11)
     otsu = pcv.threshold.otsu(gray_img=median_img, object_type="light")
@@ -66,7 +66,7 @@ def segmenting_blue_yellow(numpy_array):
     # cannot use gaussian as a binary since it create gray point
     gaussian_img = pcv.gaussian_blur(img=otsu, ksize=(5, 5), sigma_x=0, sigma_y=None)
     leaf_mask = pcv.fill_holes(bin_img=otsu)
-    masked = pcv.apply_mask(img=numpy_array, mask=leaf_mask, mask_color='white')
+    masked = pcv.apply_mask(img=numpy_array, mask=leaf_mask, mask_color="white")
     return b_channel, median_img, otsu, gaussian_img, leaf_mask, masked
 
 
@@ -78,7 +78,7 @@ def segmenting_saturation(numpy_array):
     # gaussian blur calculate the mean of neighbor: produce smooth and soft edges
     gaussian_img = pcv.gaussian_blur(img=otsu, ksize=(5, 5), sigma_x=0, sigma_y=None)
     leaf_mask = pcv.fill_holes(bin_img=otsu)
-    masked = pcv.apply_mask(img=numpy_array, mask=leaf_mask, mask_color='white')
+    masked = pcv.apply_mask(img=numpy_array, mask=leaf_mask, mask_color="white")
     return s_channel, median_img, otsu, gaussian_img, leaf_mask, masked
 
 
@@ -106,7 +106,7 @@ def transform_image(image_path):
     leaf_mask_d = pcv.logical_or(bin_img1=leaf_mask_s, bin_img2=leaf_mask_b)
     leaf_mask_z = pcv.logical_or(bin_img1=leaf_mask_c, bin_img2=leaf_mask_d)
 
-    masked = pcv.apply_mask(img=numpy_image, mask=leaf_mask_c, mask_color='white')
+    masked = pcv.apply_mask(img=numpy_image, mask=leaf_mask_c, mask_color="white")
     # masked = pcv.apply_mask(img=numpy_image, mask=leaf_mask_z, mask_color='white')
 
     # roi = pcv.roi.circle(img=masked, x=125, y=125, r=100)
@@ -140,6 +140,7 @@ def transform_image(image_path):
 
     return transformed_images
 
+
 def save_transformed(source, image_path, images_with_titles: list[tuple], destination):
     the_end = [part for part in image_path.parts if part not in source.parts]
     new_path = destination / Path(*the_end)
@@ -155,6 +156,7 @@ def save_transformed(source, image_path, images_with_titles: list[tuple], destin
         cv.imwrite(transformed_filename, transformed_image)
     return
 
+
 def transform_dataset(source, destination):
     dataset = DatasetFolder(source)
 
@@ -163,13 +165,13 @@ def transform_dataset(source, destination):
         save_transformed(source, image_path, transformed_images, destination)
     return
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="testing the Transformation of open CV class")
     parser.add_argument("-src", help="the directory to parse from", required=False)
     parser.add_argument("-dst", help="the directory to write to", required=False)
     parser.add_argument("filename", help="a single filename to transform", nargs="?", default=None)
     args = parser.parse_args()
-
 
     if args.filename and not (args.src or args.dst):
         print(f"Processing file: {args.filename}")

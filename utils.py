@@ -10,27 +10,19 @@ from typing import Optional, Self, Union
 
 import cv2
 import numpy as np
-from Augmentor.Operations import CropRandom, Distort, Flip, Resize, Rotate, Shear, Skew, RandomBrightness, Zoom
+from Augmentor.Operations import Distort, Flip, RandomBrightness, Rotate, Shear, Zoom
 from PIL import Image
-from tinygrad import Device, Tensor
-from tinygrad.dtype import dtypes
 from tqdm import tqdm
 
 
 def get_modified_images(image: Image) -> dict[str, Image]:
-    cropped_image = CropRandom(probability=1, percentage_area=0.8).perform_operation([image])[0]
 
     modified_images = {
         "Intensity": RandomBrightness(probability=1, min_factor=0.7, max_factor=1.3).perform_operation([image])[0],
-        # could rotate 180 degrees
         "Rotate": Rotate(probability=1, rotation=90).perform_operation([image])[0],
         "Flip": Flip(probability=1, top_bottom_left_right="RANDOM").perform_operation([image])[0],
-        # "Skew": Skew(probability=1, skew_type="TILT", magnitude=0.5).perform_operation([image])[0],
         "Shear": Shear(probability=1, max_shear_left=15, max_shear_right=15).perform_operation([image])[0],
-
         "Zoom": Zoom(probability=1, min_factor=1.05, max_factor=1.15).perform_operation([image])[0],
-        # "Crop": Resize(probability=1, width=image.width, height=image.height, resample_filter="BICUBIC").perform_operation([cropped_image])[0],
-
         "Distortion": Distort(probability=1, grid_width=4, grid_height=4, magnitude=20).perform_operation([image])[0],
     }
     return modified_images.items()
@@ -60,10 +52,7 @@ class DatasetFolder:
         self.mapped_dictionnary: Optional[dict[str, int]] = None
         self.count_dictionnary: dict[str, int] = {}
         self.indices_dictionnary: dict[str, list[int]] = {}
-        # t0 = time.monotonic()
         self.__find_classes(self.root)
-        # t1 = time.monotonic()
-        # print(f"__find_classes timet: {t1 - t0}")
         self.images: Optional[list[Image]] = None
         self.numpy_arrays: Optional[list[np.ndarray]] = None
         self.augmented_images = {}
@@ -266,7 +255,6 @@ class Dataloader:
         self.batch_size: int = batch_size
         self.shuffle: bool = shuffle
         self.indices: list[int] = list(range(len(self.dataset)))
-        self.x_tensor: Tensor = None
 
     def _reset_indices(self):
         self.indices: list[int] = list(range(len(self.dataset)))
@@ -285,43 +273,7 @@ class Dataloader:
 
         while self.index + self.batch_size < len(self.dataset):
             # batch_size number of indices
-            batch_indices = self.indices[self.index : self.index + self.batch_size]
+            batch_indices = self.indices[self.index: self.index + self.batch_size]
             batch = [self.dataset[index] for index in batch_indices]
             yield tuple(batch)
             self.index += self.batch_size
-
-    def show_batch(self):
-        # Find a batch
-        # Match class_index from batch with category_name
-        # use display images from Augmentation
-        batch = next(iter(self))
-        print(batch)
-        pass
-
-    def get_tensor(self, new_size=None) -> tuple(Tensor, Tensor):
-        """
-        Return the X_train, Y_train as tinygrad.Tensor from the dataset
-        from images numpy arrays create a unique Tensor containing all the dataset => X_train
-        see getitem to retrieve class index => Y_train
-        """
-        print("0")
-        if self.dataset.numpy_arrays is None:
-            self.dataset.to_numpy(new_size)
-
-        if new_size is None:
-            new_size = (256, 256)
-        t0 = time.monotonic()
-        simple_array = np.stack(self.dataset.numpy_arrays).reshape(-1, 3, new_size[0], new_size[1])
-
-        labels_array = np.zeros(len(self.dataset), dtype=np.uint8)
-        for label, indices in self.dataset.indices_dictionnary.items():
-            np.put(labels_array, indices, self.dataset.mapped_dictionnary[label])
-        # return simple_array, labels_array
-        self.y_tensor = Tensor(labels_array, requires_grad=False, dtype=dtypes.uchar)
-        self.x_tensor = Tensor(simple_array, requires_grad=False, dtype=dtypes.float32)
-        self.x_tensor /= 255.0
-        print(self.x_tensor.shape)
-        t1 = time.monotonic()
-        print(f"create tensor: {t1 - t0}")
-        # print(self.x_tensor[0].numpy())
-        return self.x_tensor, self.y_tensor

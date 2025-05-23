@@ -13,6 +13,7 @@ from Augmentation import display_images
 from tqdm import tqdm
 import json
 
+
 def get_model_from_path(model_path, classes_count):
     if AlexNet.__name__ in str(model_path):
         return AlexNet(classes_count), T.Compose([
@@ -25,6 +26,7 @@ def get_model_from_path(model_path, classes_count):
             T.ToTensor(),
         ])
     return "no model found"
+
 
 def predict_image(image_path, model_path):
     model, transform, classes = prepare_model(model_path)
@@ -67,13 +69,15 @@ def predict_dataset(model_path):
     predictions = torch.cat(predictions)
     return labels, predictions, dataset.classes
 
+
 def get_dataset_from_path(model_path):
-    return Path(model_path.stem.split('-')[1])
+    return Path(model_path.stem.split("-")[1])
+
 
 def get_classes_from_path(model_path):
     classes_file = Path(f"{model_path.parent}/{model_path.stem}.json")
     if classes_file.is_file():
-        with open(classes_file, 'r') as f:
+        with open(classes_file, "r") as f:
             classes = json.load(f)
     else:
         print(f"{classes_file} not detected")
@@ -105,6 +109,7 @@ def model_confusion(y_true, y_prediction, classes, show=False):
 
 def get_accuracy(y_true, y_prediction):
     return (y_prediction == y_true).sum() / len(y_true)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Predict")

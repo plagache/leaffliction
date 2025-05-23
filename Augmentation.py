@@ -32,7 +32,6 @@ def display_images(title: str, images_with_titles: list[tuple], show=True) -> No
     for axe in flatten_axes:
         axe.axis("off")
 
-
     for (title, img), axe in zip(images_with_titles, flatten_axes):
         axe.imshow(img)
         axe.set_title(title, fontsize=10)
@@ -48,7 +47,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Augment an image or directories of images")
     parser.add_argument("path", help="the file(s) to augment")
     args = parser.parse_args()
-
 
     output_directory = "augmented_directory"
 
@@ -69,20 +67,3 @@ if __name__ == "__main__":
         exit(0)
     else:
         raise ValueError("The given path was neither a file nor a directory")
-        # Exception path error
-
-    ###################
-
-    # image => apply save and show modified
-    # directory => apply and save modified with tree
-
-    # balance dataset
-    # 1600
-    # 280
-
-    # for range((max - min) % number of transformation):
-    #     apply number of transfo ?
-
-    # modified images are always saved next to their original image
-
-    # refacto the modify images loop to work as a function (need to work with only show image)
