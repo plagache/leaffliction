@@ -11,6 +11,10 @@ from utils import DatasetFolder
 from Augmentation import display_images
 
 
+def normalize_image(image):
+    return cv.normalize(image, None, 0, 255, cv.NORM_MINMAX, cv.CV_8U)
+
+
 def apply_gaussian(image):
     gaussian_3_3 = (1 / 16) * np.array([[1, 2, 1], [2, 4, 2], [1, 2, 1]])
     output = cv.filter2D(image, -1, gaussian_3_3)
@@ -31,17 +35,15 @@ def apply_horizontal(image):
 
 
 def combine_edge_detection(vertical_image, horizontal_image):
-    threshold_value = 75
+    threshold_value = 64
     # output = np.sqrt(np.square(vertical_image) + np.square(horizontal_image))
     combine_gradients = np.abs(vertical_image) + np.abs(horizontal_image)
 
-    normalized_magnitude_image = cv.normalize(
-        combine_gradients, None, 0, 255, cv.NORM_MINMAX, cv.CV_8U
-    )
+    normalized_magnitude_image = normalize_image(combine_gradients)
     binary_image = np.zeros_like(combine_gradients, dtype=np.uint8)
 
     binary_image[normalized_magnitude_image > threshold_value] = 1
-    return combine_gradients, binary_image
+    return normalized_magnitude_image, binary_image
 
 
 def segmenting_red_green(numpy_array):
@@ -115,6 +117,9 @@ def transform_image(image_path):
     )
     combine_edges = apply_gaussian(combine_edges)
     combine_gradients = apply_gaussian(combine_gradients)
+
+    vertical_edges = normalize_image(vertical_edges)
+    horizontal_edges = normalize_image(horizontal_edges)
 
     a_channel, median_img, otsu, gaussian_img, leaf_mask_a, masked = (
         segmenting_red_green(numpy_image)
