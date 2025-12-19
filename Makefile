@@ -115,8 +115,8 @@ sample: augmentation
 train:
 	# ${PYTHON} train.py
 	# ${PYTHON} train.py images/Apple
-	${PYTHON} train.py images/Grape
-	# ${PYTHON} train.py images
+	# ${PYTHON} train.py images/Grape
+	${PYTHON} train.py images
 
 predict:
 	# ${PYTHON} predict.py

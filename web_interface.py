@@ -4,22 +4,8 @@ from pathlib import Path
 from Transformation import transform_image
 from Augmentation import display_images
 
-
-def list_models():
-    files: list[Path] = list(Path("models").rglob("*.pth"))
-    models = []
-    for model in files:
-        if Path.is_file(model):
-            name = model.name.split("-")[0]
-            models.append((name, str(model)))
-    return models
-
-
-def give_image(image_path):
-    if image_path:
-        return image_path
-    return None
-
+def give_image(given_path):
+    return given_path
 
 def predict(model_path, image_path):
     if not model_path:
@@ -36,10 +22,11 @@ def predict(model_path, image_path):
     figure = display_images(f"Class predicted: {prediction}", transformed_images, show=False)
     return figure
 
-def asdf(model_path):
+def validate(model_path):
     if not model_path:
         return "No model selected", None
 
+    model_path = Path(model_path)
     labels, predictions, classes = predict_dataset(model_path)
     la_retourne_a_tourner = get_accuracy(labels, predictions)
     confusion_figure = model_confusion(labels, predictions, classes)
@@ -50,29 +37,26 @@ with gr.Blocks() as demo:
     with gr.Tab("Predict"):
         with gr.Row():
             with gr.Column(scale=1):
-                predict_model_selector = gr.Dropdown(choices=list_models(), label="select a model")
-                file_explorer = gr.FileExplorer(root_dir="images", file_count="single", max_height=360)
-                image_display = gr.Image(label="Selected Image")
+                predict_model_selector = gr.FileExplorer(root_dir="models", glob="*.pth", file_count="single", label="Model selection")
+                file_explorer = gr.FileExplorer(root_dir="images", glob="**/*.JPG", file_count="single", max_height=360, label="Image selection")
+                image_display = gr.Image(label="Selected Image", inputs=file_explorer)
                 predict_btn = gr.Button(value="Predict")
             with gr.Column(scale=2):
                 prediction = gr.Plot(label="Predicted image")
 
         file_explorer.change(fn=give_image, inputs=file_explorer, outputs=image_display)
-        predict_model_selector.change(inputs=predict_model_selector)
         predict_btn.click(fn=predict, inputs=[predict_model_selector, file_explorer], outputs=[prediction])
 
     with gr.Tab("Validation"):
         with gr.Row():
             with gr.Column():
-                valid_model_selector = gr.Dropdown(choices=list_models(), label="select a model")
+                valid_model_selector = gr.FileExplorer(root_dir="models", glob="*.pth", file_count="single", label="Model selection")
                 validation_btn = gr.Button(value="Valid")
             with gr.Column():
                 validation = gr.Textbox(label="Validation")
-        # with gr.Row():
         confusion = gr.Plot(label="Confusion Matrix")
 
-        validation_btn.click(fn=asdf, inputs=valid_model_selector, outputs=[validation, confusion])
-        valid_model_selector.change(inputs=valid_model_selector)
+        validation_btn.click(fn=validate, inputs=valid_model_selector, outputs=[validation, confusion])
 
 
 if __name__ == "__main__":

@@ -1,13 +1,15 @@
 # Updating this file and make will update the environement
 matplotlib      # used in concurance with the matplotlibrc to use webagg
+safetensors
 # PyQt6           # lib graphic # no need cause we use webagg with matplotlib
 flake8          # norme
 Augmentor       # image augmentation library 589M 20 packages
 numpy
 fastai
+torchvision
 tqdm
 gradio          # simple web UI
-git+https://github.com/tinygrad/tinygrad.git
+git+https://github.com/tinygrad/tinygrad.git@master
 opencv-python   # Open Computer Vision
 plantcv         # Plant Computer Vision module
 # pillow          # python image library # already in Augmentor

@@ -12,6 +12,7 @@ from Transformation import transform_image
 from Augmentation import display_images
 from tqdm import tqdm
 import json
+from safetensors.torch import save_model
 
 def get_model_from_path(model_path, classes_count):
     if AlexNet.__name__ in str(model_path):
@@ -90,6 +91,9 @@ def prepare_model(model_path):
     model.load_state_dict(state_dict)
 
     model.eval()
+
+    model_name = Path(f"{model_path.parent}/{model_path.stem}.safetensors")
+    save_model(model=model, filename=str(model_name))
 
     return model, transform, classes
 
