@@ -5,8 +5,9 @@ safetensors
 flake8          # norme
 Augmentor       # image augmentation library 589M 20 packages
 numpy
-fastai
-torchvision
+fastai@git+https://github.com/fastai/fastai@2.7.18
+# torch==2.5.0
+torchvision==0.20.0
 tqdm
 gradio          # simple web UI
 git+https://github.com/tinygrad/tinygrad.git@master

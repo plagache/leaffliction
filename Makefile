@@ -7,10 +7,7 @@ BIN=${VENV}/bin
 PYTHON=${BIN}/python
 ACTIVATE=${BIN}/activate
 
-PROGRAM=
-
-# ARGUMENTS=
-
+LEAVES_URL=https://cdn.intra.42.fr/document/document/42144/leaves.zip
 
 #------------------------------------------------#
 #   SETUP                                        #
@@ -38,7 +35,7 @@ module: setup.py
 	uv pip install -e . --upgrade
 
 download:
-	wget -N https://cdn.intra.42.fr/document/document/17547/leaves.zip
+	wget -N ${LEAVES_URL}
 
 extract: download
 	unzip leaves.zip

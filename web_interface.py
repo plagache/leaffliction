@@ -28,10 +28,10 @@ def validate(model_path):
 
     model_path = Path(model_path)
     labels, predictions, classes = predict_dataset(model_path)
-    la_retourne_a_tourner = get_accuracy(labels, predictions)
+    accuracy = get_accuracy(labels, predictions)
     confusion_figure = model_confusion(labels, predictions, classes)
 
-    return la_retourne_a_tourner, confusion_figure
+    return f"{accuracy.item() * 100:.2f}%", confusion_figure
 
 with gr.Blocks() as demo:
     with gr.Tab("Predict"):
