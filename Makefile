@@ -47,6 +47,12 @@ extract: download
 	mv images/Apple_* images/Apple/
 	mv images/Grape_* images/Grape/
 
+tools:
+	uv tool install hf
+
+dl_model:
+	hf download alagache/leaffliction
+
 debug_directory:
 	mkdir -p debug
 

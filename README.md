@@ -12,13 +12,13 @@ Plants look different when they're sick. The computer learns to spot these diffe
 
 ### 1. Take a photo
 
-<!-- ![Photo of a leaf](./docs/original.jpg) -->
+![Photo of a leaf](./docs/original.jpg)
 
 ### 2. The computer finds the leaf
 
 It ignores the background and focuses only on the leaf:
 
-<!-- ![Leaf isolated from background](./docs/leaf-masked.jpg) -->
+![Leaf isolated from background](./docs/leaf-masked.jpg)
 
 ### 3. The computer looks for patterns
 
