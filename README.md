@@ -12,19 +12,19 @@ Plants look different when they're sick. The computer learns to spot these diffe
 
 ### 1. Take a photo
 
-![Photo of a leaf](./docs/original.jpg)
+<!-- ![Photo of a leaf](./docs/original.jpg) -->
 
 ### 2. The computer finds the leaf
 
 It ignores the background and focuses only on the leaf:
 
-![Leaf isolated from background](./docs/leaf-masked.jpg)
+<!-- ![Leaf isolated from background](./docs/leaf-masked.jpg) -->
 
 ### 3. The computer looks for patterns
 
 It analyzes the leaf's texture and color to find signs of disease:
 
-![Edge detection showing patterns](./docs/edges.jpg)
+<!-- ![Edge detection showing patterns](./docs/edges.jpg) -->
 
 ### 4. Result
 
@@ -34,8 +34,8 @@ The computer predicts what disease the leaf has (or if it's healthy).
 
 ## Try it
 
-Prewiewable/Clickable Gradio
-![Web interface](./docs/web-interface.jpg)
+<!-- Prewiewable/Clickable Gradio -->
+![Web interface](./docs/gradio_ui.jpg)
 
 ## Installation
 
