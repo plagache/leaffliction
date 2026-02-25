@@ -13,3 +13,4 @@ debug/
 *.safetensor
 *.tar.gz
 *.zip
+!docs/*.jpg
