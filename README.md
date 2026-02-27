@@ -35,7 +35,7 @@ The computer predicts what disease the leaf has (or if it's healthy).
 ## Try it
 
 <!-- Prewiewable/Clickable Gradio -->
-![Web interface](./docs/gradio_ui.jpg)
+[![Web interface](./docs/gradio_ui.jpg)](https://huggingface.co/spaces/alagache/leaffliction)
 
 ## Installation
 
